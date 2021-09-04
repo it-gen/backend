@@ -1,0 +1,20 @@
+version: '3'
+
+volumes:
+  mysql_data:
+    driver: local
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: it-gen-mysql
+    volumes:
+    - mysql_data:/var/lib/mysql
+    - ./it-gen.sql:/docker-entrypoint-initdb.d/it-gen.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: itgen
+      MYSQL_USER: itgen
+      MYSQL_PASSWORD: password
+    ports:
+    - 3306:3306
