@@ -6,17 +6,17 @@ import { createUser, validateUser } from '../services/users.service'
 
 const userMgmtController = new Router<RequestState>()
 
-userMgmtController.post('/register', async (ctx) => {
+userMgmtController.post('/api/register', async (ctx) => {
   const body = await createUser(ctx)
   ctx.body = body
 })
 
-userMgmtController.post('/login', async (ctx) => {
+userMgmtController.post('/api/login', async (ctx) => {
   const body = await validateUser(ctx)
   ctx.body = body
 })
 
-userMgmtController.post('/validate', tokenValidatorMiddleware, async (ctx) => {
+userMgmtController.post('/api/validate', tokenValidatorMiddleware, async (ctx) => {
   const { connection } = ctx.state
 
   ctx.body = await connection('users').select()

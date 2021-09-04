@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import { ForbiddenException } from '../exceptions/forbidden.exception'
 import { UnauthorizedException } from '../exceptions/unauthorized.exception'
 
-const secret = '0000dc12-09ad-4b89-8d29-ceb5d7993a18'
+const secret = '1qUYke4X-LoaQ-FPjg-YBAS-sUVdKBZgmsnW'
 
 export interface JWTUser{
   userId: number

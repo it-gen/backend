@@ -8,9 +8,9 @@ import { createToken } from './jwt.service'
 interface UserToken {token : string}
 
 async function createUser(ctx: RequestContext): Promise<UserToken> {
-  const { email, name, surname, password } = ctx.request.body
+  const { email, name, password } = ctx.request.body
   const hash = await bcrypt.hash(password, 10)
-  const [id] = await createUserRecord({ email, name, surname, password:hash }, ctx)
+  const [id] = await createUserRecord({ email, name, password:hash }, ctx)
   const token = await createToken(id)
   return { token }
 }

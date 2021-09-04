@@ -5,8 +5,7 @@ import { RequestContext } from "../interfaces/request-context.interface"
 
 interface BaseUser {
   email: string,
-  name: string,
-  surname: string
+  name: string
 }
 
 interface UserId {

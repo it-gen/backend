@@ -3,12 +3,13 @@
 module.exports = {
 
   development: {
-    client: 'pg',
+    client: 'mysql',
     connection: {
       host: '127.0.0.1',
-      user: 'postgres',
-      password: 'postgres',
-      database: 'it-gen'
+      port: 3306,
+      user: 'itgen',
+      password: 'password',
+      database: 'itgen'
     }
   }
 };
