@@ -1,0 +1,535 @@
+openapi: "3.0.3"
+info:
+  description: "IT Generator API for Developers"
+  version: "0.0.1-SNAPSHOT"
+  title: "IT Generator"
+  contact:
+    email: "developers@example.com"
+tags:
+  - name: "person"
+  - name: "company"
+  - name: "generators"
+paths:
+  /persons:
+    get:
+      tags:
+        - "person"
+      summary: "Get randomly generated persons"
+      operationId: "getPersons"
+      parameters:
+        - name: nationality
+          description: "Specify person nationality"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: sex
+          description: "Specify person sex"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: age_min
+          description: "Specify person minimal age"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: age_max
+          description: "Specify person maximal age"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: birth_date
+          description: "Specify birth date"
+          in: query
+          schema: {
+            type: string,
+            format: date
+          }
+        - name: _number_of_data
+          description: "Number of persons generated"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: _extended_data
+          description: "Should persons have extended data"
+          in: query
+          schema: {
+            type: boolean
+          }
+      responses:
+        "200":
+          description: "Generated persons data"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/person"
+  /companies:
+    get:
+      tags:
+        - "company"
+      summary: "Get randomly generated companies"
+      operationId: "getCompanies"
+      parameters:
+        - name: country
+          in: query
+          description: "Specify company country"
+          schema: {
+            type: string
+          }
+        - name: founded
+          in: query
+          description: "Specify when company was started"
+          schema: {
+            type: string
+          }
+        - name: _number_of_data
+          description: "Number of companies generated"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: _extended_data
+          description: "Should companies have extended data"
+          in: query
+          schema: {
+            type: boolean
+          }
+      responses:
+        "200":
+          description: "Generated companies data"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/company"
+  /generators/national-identifications:
+    get:
+      tags:
+        - "generators"
+      summary: "Generate random national identities"
+      operationId: "generateNationalIdentityNumbers"
+      parameters:
+        - name: nationality
+          description: "Specify nationality"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: sex
+          description: "Specify sex"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: age_min
+          description: "Specify minimal age"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: age_max
+          description: "Specify maximal age"
+          in: query
+          schema: {
+            type: integer
+          }
+        - name: birth_date
+          description: "Specify birth date"
+          in: query
+          schema: {
+            type: string,
+            format: date
+          }
+        - name: _number_of_data
+          description: "Number of data generated"
+          in: query
+          schema: {
+            type: integer
+          }
+      responses:
+        "200":
+          description: "Generated national identities"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  nationalIdentity:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "SIN"
+                      number:
+                        type: string
+                        example: "123-456-789"
+    post:
+      tags:
+        - "generators"
+      summary: "Validate national identity"
+      operationId: "validateNationalIdentityNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                nationality:
+                  enum:
+                    - PL
+                    - FR
+                    - US
+                    - DE
+                    - CN
+                  example: "CA"
+                nationalIdentityNumber:
+                  type: string
+                  example: "123-456-789"
+      responses:
+        "200":
+          description: "Validated national identity"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+  /generators/bank-accounts:
+    get:
+      tags:
+        - "generators"
+      summary: "Generate random bank account"
+      operationId: "generateBankAccounts"
+      parameters:
+        - name: country
+          description: "Specify country"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: _number_of_data
+          description: "Number of data generated"
+          in: query
+          schema: {
+            type: integer
+          }
+      responses:
+        "200":
+          description: "Generated bank accounts"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/banking"
+    post:
+      tags:
+        - "generators"
+      summary: "Validate bank account"
+      operationId: "validateBankAccount"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                country:
+                  enum:
+                    - PL
+                    - FR
+                    - US
+                    - DE
+                    - CN
+                  example: "PL"
+                iban:
+                  type: string
+                  example: "48124039277825059704971499"
+      responses:
+        "200":
+          description: "Validated bank account"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+  /generators/vat-identification-numbers:
+    get:
+      tags:
+        - "generators"
+      summary: "Generate random vat identification numbers"
+      operationId: "generateVatIdentificationNumbers"
+      parameters:
+        - name: country
+          description: "Specify country"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: _number_of_data
+          description: "Number of data generated"
+          in: query
+          schema: {
+            type: integer
+          }
+      responses:
+        "200":
+          description: "Generated vat identification numbers"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  identificationNumber:
+                    type: string
+                    example: "9Y56T8953"
+    post:
+      tags:
+        - "generators"
+      summary: "Validate vat identification number"
+      operationId: "validateVatIdentificationNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                country:
+                  enum:
+                    - PL
+                    - FR
+                    - US
+                    - DE
+                    - CN
+                  example: "PL"
+                identificationNumber:
+                  type: string
+                  example: "9Y56T8953"
+      responses:
+        "200":
+          description: "Validated vat identification number"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+  /generators/national-identity-card-numbers:
+    get:
+      tags:
+        - "generators"
+      summary: "Generate random national identity card numbers"
+      operationId: "generateNationalIdentityCardNumbers"
+      parameters:
+        - name: country
+          description: "Specify country"
+          in: query
+          schema: {
+            type: string
+          }
+        - name: _number_of_data
+          description: "Number of data generated"
+          in: query
+          schema: {
+            type: integer
+          }
+      responses:
+        "200":
+          description: "Generated national identity card numbers"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  identificationNumber:
+                    type: string
+                    example: "0018-5978"
+    post:
+      tags:
+        - "generators"
+      summary: "Validate national identity card number"
+      operationId: "validateNationalIdentityCardNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                country:
+                  enum:
+                    - PL
+                    - FR
+                    - US
+                    - DE
+                    - CN
+                  example: "PL"
+                identityCardNumber:
+                  type: string
+                  example: "0018-5978"
+      responses:
+        "200":
+          description: "Validated national identity card number"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+components:
+  schemas:
+    person:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "John"
+        middleName:
+          type: string
+          example: "Bar"
+        lastName:
+          type: string
+          example: "Doe"
+        sex:
+          enum:
+            - male
+            - female
+        birthDate:
+          type: string
+          format: date
+          example: "1975-06-01"
+        age:
+          type: integer
+          example: 46
+        nationality:
+          enum:
+            - PL
+            - FR
+            - US
+            - DE
+            - CN
+        nationalIdentity:
+          type: object
+          properties:
+            type:
+              type: string
+              example: "SIN"
+            number:
+              type: string
+              example: "123-456-789"
+        nationalIdentityCardNumber:
+          type: string
+        passportNumber:
+          type: string
+        addressHome:
+          $ref: "#/components/schemas/address"
+        addressMail:
+          $ref: "#/components/schemas/address"
+        contact:
+          $ref: "#/components/schemas/contact"
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+        banking:
+          $ref: "#/components/schemas/banking"
+
+    company:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "JohnDoe Inc."
+        identificationNumber:
+          type: string
+          example: "9Y56T8953"
+        domain:
+          type: string
+          format: url
+        founded:
+          type: string
+          format: date
+          example: "1990-06-03"
+        sector:
+          type: string
+          example: "Information Technology"
+        contact:
+          $ref: "#/components/schemas/contact"
+        headquarter:
+          $ref: "#/components/schemas/address"
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+
+    address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: "Sample St"
+        houseNumber:
+          type: string
+          example: "3A"
+        flatNumber:
+          type: string
+          example: "5"
+        city:
+          type: string
+          example: "Toronto"
+        zipCode:
+          type: string
+          example: "M4Y"
+        country:
+          enum:
+            - PL
+            - FR
+            - US
+            - DE
+            - CN
+            - CA
+          example: "CA"
+
+    contact:
+      type: object
+      properties:
+        phone:
+          type: object
+          properties:
+            phoneCode:
+              type: string
+              example: "+1"
+            phoneNumber:
+              type: string
+              example: "93431856"
+        email:
+          type: string
+          format: email
+
+    socialMedia:
+      type: array
+      items:
+        type: object
+        properties:
+          platform:
+            type: string
+          site:
+            type: string
+            format: url
+      example:
+        - platform: "facebook"
+          site: "https://facebook.com/john.doe/"
+        - platform: "linkedin"
+          site: "https://linkedin.com/in/john.doe/"
+        - platform: "twitter"
+          site: "https://twitter.com/john.doe/"
+
+    banking:
+      type: object
+      properties:
+        bank:
+          type: string
+          example: "New Era Bank"
+        iban:
+          type: string
+          example: "CA10011613811144031146692243"
