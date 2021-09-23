@@ -8,58 +8,44 @@ info:
 tags:
   - name: "person"
   - name: "company"
+  - name: "address"
   - name: "generators"
 paths:
-  /persons:
-    get:
+  /persons/generate:
+    post:
       tags:
         - "person"
       summary: "Get randomly generated persons"
       operationId: "getPersons"
-      parameters:
-        - name: nationality
-          description: "Specify person nationality"
-          in: query
-          schema: {
-            type: string
-          }
-        - name: sex
-          description: "Specify person sex"
-          in: query
-          schema: {
-            type: string
-          }
-        - name: age_min
-          description: "Specify person minimal age"
-          in: query
-          schema: {
-            type: integer
-          }
-        - name: age_max
-          description: "Specify person maximal age"
-          in: query
-          schema: {
-            type: integer
-          }
-        - name: birth_date
-          description: "Specify birth date"
-          in: query
-          schema: {
-            type: string,
-            format: date
-          }
-        - name: _number_of_data
-          description: "Number of persons generated"
-          in: query
-          schema: {
-            type: integer
-          }
-        - name: _extended_data
-          description: "Should persons have extended data"
-          in: query
-          schema: {
-            type: boolean
-          }
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+                sex:
+                  enum:
+                    - male
+                    - female
+                minAge:
+                  type: integer
+                  example: 0
+                maxAge:
+                  type: integer
+                  example: 100
+                birthDate:
+                  type: integer
+                  example: 100
+                _numberOfData:
+                  type: integer
+                  example: 1
+                _extendedData:
+                  enum:
+                    - 0
+                    - 1
       responses:
         "200":
           description: "Generated persons data"
@@ -67,6 +53,326 @@ paths:
             application/vnd.itgenerator.v1+json:
               schema:
                 $ref: "#/components/schemas/person"
+  /persons/first-name/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate first name"
+      operationId: "generateFirstName"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  firstName:
+                    type: string
+                    example: "John"
+  /persons/middle-name/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate middle name"
+      operationId: "generateMiddleName"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  middleName:
+                    type: string
+                    example: ""
+  /persons/last-name/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate last name"
+      operationId: "generateLastName"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  lastName:
+                    type: string
+                    example: "Doe"
+  /persons/sex/generate:
+    get:
+      tags:
+        - "person"
+      summary: "Get random sex"
+      operationId: "generateSex"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  sex:
+                    type: string
+                    example: "male"
+  /persons/age-and-birth-date/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate age and birth date"
+      operationId: "generateAgeAndBirthDate"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+                minAge:
+                  type: integer
+                  example: 0
+                maxAge:
+                  type: integer
+                  example: 99
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  age:
+                    type: integer
+                    example: 0
+                  birthDate:
+                    type: string
+                    format: date
+                    example: "2021-09-01"
+  /persons/nationality/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate nationality"
+      operationId: "generateNationality"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                continent:
+                  enum:
+                    - africa
+                    - asia
+                    - australia
+                    - europe
+                    - north-america
+                    - south-america
+                    - any
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  nationality:
+                    type: string
+                    example: "US"
+  /persons/national-identity/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate national identity"
+      operationId: "generateNationalIdentity"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  nationalIdentity:
+                    type: string
+                    example: "AAA-GG-SSSS"
+  /persons/national-identity-card-number/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate national identity card number"
+      operationId: "generateNationalIdentityCardNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  nationalIdentity:
+                    type: string
+                    example: ""
+  /persons/passport-number/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate passport number"
+      operationId: "generatePassportNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  passportNumber:
+                    type: string
+                    example: "C03005988"
+  /persons/phone-number/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate phone number"
+      operationId: "generatePhoneNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  phoneCode:
+                    type: string
+                    example: "+1"
+                  phoneNumber:
+                    type: string
+                    example: "93431856"
+  /persons/email/generate:
+    post:
+      tags:
+        - "person"
+      summary: "Randomly generate email"
+      operationId: "generateEmail"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    format: email
+                    example: "example@example.com"
+  /addresses/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate address"
+      operationId: "generateAddresses"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/address"
+
   /companies:
     get:
       tags:
@@ -390,7 +696,7 @@ components:
           example: "John"
         middleName:
           type: string
-          example: "Bar"
+          example: ""
         lastName:
           type: string
           example: "Doe"
@@ -398,6 +704,7 @@ components:
           enum:
             - male
             - female
+          example: "male"
         birthDate:
           type: string
           format: date
@@ -423,8 +730,10 @@ components:
               example: "123-456-789"
         nationalIdentityCardNumber:
           type: string
+          example: null
         passportNumber:
           type: string
+          example: null
         addressHome:
           $ref: "#/components/schemas/address"
         addressMail:
@@ -476,7 +785,7 @@ components:
           example: "5"
         city:
           type: string
-          example: "Toronto"
+          example: "Chicago"
         zipCode:
           type: string
           example: "M4Y"
@@ -488,7 +797,7 @@ components:
             - DE
             - CN
             - CA
-          example: "CA"
+          example: "US"
 
     contact:
       type: object
@@ -533,3 +842,16 @@ components:
         iban:
           type: string
           example: "CA10011613811144031146692243"
+
+    locales:
+      type: object
+      properties:
+        locale:
+          enum:
+            - PL
+            - FR
+            - US
+            - DE
+            - CN
+            - GB
+          example: "US"
