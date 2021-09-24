@@ -6,9 +6,9 @@ info:
   contact:
     email: "developers@example.com"
 tags:
-  - name: "person"
-  - name: "company"
   - name: "address"
+  - name: "company"
+  - name: "person"
   - name: "generators"
 paths:
   /persons/generate:
@@ -354,7 +354,7 @@ paths:
     post:
       tags:
         - "address"
-      summary: "Randomly generate address"
+      summary: "Randomly generate addresses"
       operationId: "generateAddresses"
       requestBody:
         content:
@@ -372,6 +372,168 @@ paths:
             application/vnd.itgenerator.v1+json:
               schema:
                 $ref: "#/components/schemas/address"
+  /addresses/street/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate street"
+      operationId: "generateAddressStreet"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  street:
+                    type: string
+                    example: "Green St"
+  /addresses/house-number/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate house number"
+      operationId: "generateAddressHouseNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  houseNumber:
+                    type: string
+                    example: "3A"
+  /addresses/flat-number/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate flat number"
+      operationId: "generateAddressFlatNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  flatNumber:
+                    type: string
+                    example: "5"
+  /addresses/city/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate city"
+      operationId: "generateAddressCity"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  City:
+                    type: string
+                    example: "Chicago"
+  /addresses/zip-code/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate zip code"
+      operationId: "generateAddressZipCode"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  zipCode:
+                    type: string
+                    example: "M4Y"
+  /addresses/country/generate:
+    post:
+      tags:
+        - "address"
+      summary: "Randomly generate zip code"
+      operationId: "generateAddressCountry"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                continent:
+                  enum:
+                    - africa
+                    - asia
+                    - australia
+                    - europe
+                    - north-america
+                    - south-america
+                    - any
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  country:
+                    type: string
+                    example: "United States of America"
 
   /companies:
     get:
@@ -776,7 +938,7 @@ components:
       properties:
         street:
           type: string
-          example: "Sample St"
+          example: "Green St"
         houseNumber:
           type: string
           example: "3A"
@@ -790,14 +952,8 @@ components:
           type: string
           example: "M4Y"
         country:
-          enum:
-            - PL
-            - FR
-            - US
-            - DE
-            - CN
-            - CA
-          example: "US"
+          type: string
+          example: "United States of America"
 
     contact:
       type: object
