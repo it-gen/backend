@@ -7,6 +7,7 @@ info:
     email: "developers@example.com"
 tags:
   - name: "address"
+  - name: "banking"
   - name: "company"
   - name: "person"
   - name: "generators"
@@ -775,6 +776,28 @@ paths:
                   email:
                     type: string
                     format: email
+  /banking/generate:
+    post:
+      tags:
+        - "banking"
+      summary: "Randomly generated banking information"
+      operationId: "generateBankingInformation"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/banking"
 
 
   /generators/national-identifications:
