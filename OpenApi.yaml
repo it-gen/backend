@@ -48,7 +48,7 @@ paths:
                     - 1
       responses:
         "200":
-          description: "Generated persons data"
+          description: "OK"
           content:
             application/vnd.itgenerator.v1+json:
               schema:
@@ -534,45 +534,171 @@ paths:
                   country:
                     type: string
                     example: "United States of America"
-
-  /companies:
-    get:
+  /companies/generate:
+    post:
       tags:
         - "company"
-      summary: "Get randomly generated companies"
-      operationId: "getCompanies"
-      parameters:
-        - name: country
-          in: query
-          description: "Specify company country"
-          schema: {
-            type: string
-          }
-        - name: founded
-          in: query
-          description: "Specify when company was started"
-          schema: {
-            type: string
-          }
-        - name: _number_of_data
-          description: "Number of companies generated"
-          in: query
-          schema: {
-            type: integer
-          }
-        - name: _extended_data
-          description: "Should companies have extended data"
-          in: query
-          schema: {
-            type: boolean
-          }
+      summary: "Randomly generate companies"
+      operationId: "generateCompanies"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+                founded:
+                  type: string
+                  format: date
+                  example: "2000-01-01"
+                _numberOfData:
+                  type: integer
+                  example: 1
+                _extendedData:
+                  enum:
+                    - 0
+                    - 1
       responses:
         "200":
-          description: "Generated companies data"
+          description: "OK"
           content:
             application/vnd.itgenerator.v1+json:
               schema:
                 $ref: "#/components/schemas/company"
+  /companies/name/generate:
+    post:
+      tags:
+        - "company"
+      summary: "Get randomly generated company name"
+      operationId: "generateCompanyName"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "JohnDoe Inc."
+  /companies/identification-number/generate:
+    post:
+      tags:
+        - "company"
+      summary: "Get randomly generated company identification number"
+      operationId: "generateCompanyIdentificationNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  identificationNumber:
+                    type: string
+                    example: "9Y56T8953"
+  /companies/domain/generate:
+    post:
+      tags:
+        - "company"
+      summary: "Randomly generate company identification number"
+      operationId: "generateCompanyIdentificationNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  domain:
+                    type: string
+                    format: url
+  /companies/founded/generate:
+    post:
+      tags:
+        - "company"
+      summary: "Randomly generated company identification number"
+      operationId: "generateCompanyIdentificationNumber"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  founded:
+                    type: string
+                    format: date
+                    example: "1990-06-03"
+  /companies/sector/generate:
+    post:
+      tags:
+        - "company"
+      summary: "Randomly generated company sector information"
+      operationId: "generateCompanySector"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  generate:
+                    type: string
+                    example: "Information Technology"
+
   /generators/national-identifications:
     get:
       tags:
@@ -906,7 +1032,6 @@ components:
           $ref: "#/components/schemas/socialMedia"
         banking:
           $ref: "#/components/schemas/banking"
-
     company:
       type: object
       properties:
@@ -932,7 +1057,6 @@ components:
           $ref: "#/components/schemas/address"
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
-
     address:
       type: object
       properties:
@@ -954,7 +1078,6 @@ components:
         country:
           type: string
           example: "United States of America"
-
     contact:
       type: object
       properties:
@@ -970,7 +1093,6 @@ components:
         email:
           type: string
           format: email
-
     socialMedia:
       type: array
       items:
@@ -988,7 +1110,6 @@ components:
           site: "https://linkedin.com/in/john.doe/"
         - platform: "twitter"
           site: "https://twitter.com/john.doe/"
-
     banking:
       type: object
       properties:
@@ -998,7 +1119,6 @@ components:
         iban:
           type: string
           example: "CA10011613811144031146692243"
-
     locales:
       type: object
       properties:
