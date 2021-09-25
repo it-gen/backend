@@ -698,6 +698,84 @@ paths:
                   generate:
                     type: string
                     example: "Information Technology"
+  /contacts/generate:
+    post:
+      tags:
+        - "contacts"
+      summary: "Randomly generated contacts"
+      operationId: "generateContacts"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                $ref: "#/components/schemas/contact"
+  /contacts/phone/generate:
+    post:
+      tags:
+        - "contacts"
+      summary: "Randomly generated phone contact"
+      operationId: "generateContactPhone"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  phoneCode:
+                    type: string
+                    example: "+1"
+                  phoneNumber:
+                    type: string
+                    example: "93431856"
+  /contacts/email/generate:
+    post:
+      tags:
+        - "contacts"
+      summary: "Randomly generated email contact"
+      operationId: "generateContactEmail"
+      requestBody:
+        content:
+          application/vnd.itgenerator.v1+json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: "US"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/vnd.itgenerator.v1+json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    format: email
+
 
   /generators/national-identifications:
     get:
