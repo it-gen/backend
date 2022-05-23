@@ -1,0 +1,3201 @@
+  CREATE TABLE "T_DICT" 
+   (	"ID" NUMBER NOT NULL DISABLE, 
+	"ID_REF" NUMBER, 
+	"CATEGORY" VARCHAR2(100 CHAR) NOT NULL DISABLE, 
+	"KEY" VARCHAR2(100 CHAR) NOT NULL DISABLE, 
+	"DATA_TYPE" VARCHAR2(30 CHAR) NOT NULL DISABLE, 
+	"NULLABLE" VARCHAR2(1 CHAR) NOT NULL DISABLE, 
+	"TEXT_ALLOWED" VARCHAR2(4000 CHAR), 
+	"NUM_SCALE" NUMBER, 
+	"NUM_MIN" NUMBER, 
+	"NUM_MAX" NUMBER, 
+	"DATE_MIN" DATE, 
+	"DATE_MAX" DATE, 
+	"VALUE_TEXT" VARCHAR2(4000 CHAR), 
+	"VALUE_NUM" NUMBER, 
+	"VALUE_DATE" DATE, 
+	"ORDER_NO" NUMBER NOT NULL DISABLE, 
+	"DESCRIPTION" VARCHAR2(4000 CHAR), 
+	"CTIME" TIMESTAMP (6) NOT NULL DISABLE, 
+	"UTIME" TIMESTAMP (6) NOT NULL DISABLE, 
+	"NOTM" NUMBER NOT NULL DISABLE, 
+	"TRANS" NUMBER NOT NULL DISABLE, 
+	 CONSTRAINT "T_DICT_PK" PRIMARY KEY ("ID") DISABLE, 
+	 CONSTRAINT "T_DICT_UK1" UNIQUE ("ID_REF", "KEY") DISABLE
+   );
+
+   COMMENT ON COLUMN "T_DICT"."CATEGORY" IS 'Kategoria - wartość grupująca wartości słownika.';
+   COMMENT ON COLUMN "T_DICT"."KEY" IS 'Klucz słownika - wartość unikalna dla kategorii.';
+   COMMENT ON COLUMN "T_DICT"."DATA_TYPE" IS 'Typ danych: TEXT/NUMBER/DATE/TEXT_LOV.';
+   COMMENT ON COLUMN "T_DICT"."NULLABLE" IS 'Czy wartość klucza moze być pusta Y/N.';
+   COMMENT ON COLUMN "T_DICT"."TEXT_ALLOWED" IS 'Lista dozwolonych wartość dla pola tekstowego w formacie #VAL1#VAL2#';
+   COMMENT ON COLUMN "T_DICT"."NUM_SCALE" IS 'Ilość miejsc po przecinku, gdy DATA_TYPE=NUMBER.';
+   COMMENT ON COLUMN "T_DICT"."NUM_MIN" IS 'Minimalna dozwolona wartość, gdy DATA_TYPE=NUMBER.';
+   COMMENT ON COLUMN "T_DICT"."NUM_MAX" IS 'Maksymalna dozwolona wartość, gdy DATA_TYPE=NUMBER.';
+   COMMENT ON COLUMN "T_DICT"."DATE_MIN" IS 'Minimalna dozwolona wartość, gdy DATA_TYPE=DATE.';
+   COMMENT ON COLUMN "T_DICT"."DATE_MAX" IS 'Maksymalna dozwolona wartość, gdy DATA_TYPE=DATE.';
+   COMMENT ON COLUMN "T_DICT"."VALUE_TEXT" IS 'Domyślna wartość dla DATA_TYPE=TEXT. Nie moze być pusta, gdy NULLABLE=N.';
+   COMMENT ON COLUMN "T_DICT"."VALUE_NUM" IS 'Domyślna wartość dla DATA_TYPE=NUMBER. Nie moze być pusta, gdy NULLABLE=N.';
+   COMMENT ON COLUMN "T_DICT"."VALUE_DATE" IS 'Domyślna wartość dla DATA_TYPE=DATE. Nie moze być pusta, gdy NULLABLE=N.';
+   COMMENT ON COLUMN "T_DICT"."ORDER_NO" IS 'Domyślna pozycja wartości w kategorii.';
+   COMMENT ON COLUMN "T_DICT"."DESCRIPTION" IS 'Opis.';
+  
+  
+  
+  CREATE TABLE "T_PARAM" 
+   (	"ID" NUMBER NOT NULL DISABLE, 
+	"ID_REF" NUMBER,  
+	"VALUE_TEXT" VARCHAR2(4000 CHAR), 
+	"VALUE_NUM" NUMBER, 
+	"VALUE_DATE" DATE, 
+	"CTIME" TIMESTAMP (6) NOT NULL DISABLE, 
+	"UTIME" TIMESTAMP (6) NOT NULL DISABLE, 
+	"NOTM" NUMBER NOT NULL DISABLE, 
+	"TRANS" NUMBER NOT NULL DISABLE, 
+	"ID_DICT" NUMBER NOT NULL DISABLE, 
+	 CONSTRAINT "T_PARAM_PK" PRIMARY KEY ("ID") DISABLE,  
+	 CONSTRAINT "T_PARAM_FK1" FOREIGN KEY ("ID_DICT")
+	  REFERENCES "IKAR"."T_DICT" ("ID") DISABLE
+   );
+
+   COMMENT ON COLUMN "IKAR"."T_PARAM"."VALUE_TEXT" IS 'Wartość dla DATA_TYPE=TEXT. Nie moze być pusta, gdy NULLABLE=N.';
+   COMMENT ON COLUMN "IKAR"."T_PARAM"."VALUE_NUM" IS 'Wartość dla DATA_TYPE=NUMBER. Nie moze być pusta, gdy NULLABLE=N.';
+   COMMENT ON COLUMN "IKAR"."T_PARAM"."VALUE_DATE" IS 'Wartość dla DATA_TYPE=DATE. Nie moze być pusta, gdy NULLABLE=N.';
+
+
+  CREATE INDEX "T_PARAM_FK1" ON "IKAR"."T_PARAM" ("ID_DICT");
+  
+  CREATE OR REPLACE PACKAGE PKG_PARAM
+AS
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja modyfikuje obiekt PARAM.
+  *
+  * @param  P_ID
+  * @param  P_VALUE_TEXT
+  * @param  P_VALUE_NUM
+  * @param  P_VALUE_DATE
+  * @param  P_TRANS
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION TX_UPDATE(
+      P_ID         IN T_PARAM.ID%TYPE,
+      P_VALUE_TEXT IN T_PARAM.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM  IN T_PARAM.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE IN T_PARAM.VALUE_DATE%TYPE DEFAULT NULL,
+      P_TRANS      IN T_PARAM.TRANS%TYPE)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja tworzy obiekt PARAM.
+  *
+  * @param  PX_NEW
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_CREATE(
+      PX_NEW IN T_PARAM%ROWTYPE)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja tworzy obiekt PARAM.
+  *
+  * @param  P_ID_DICT
+  * @param  P_ID_PPRODUCT
+  * @param  P_ID_PACKAGE
+  * @param  P_ID_PACKAGE_X_RISK
+  * @param  P_VALUE_NUM
+  * @param  P_VALUE_DATE
+  * @param  P_TRANS
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_CREATE(
+      P_ID_DICT           IN T_PARAM.ID_DICT%TYPE,
+      P_ID_PRODUCT        IN T_PARAM.ID_PRODUCT%TYPE DEFAULT NULL,
+      P_ID_PACKAGE        IN T_PARAM.ID_PACKAGE%TYPE DEFAULT NULL,
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE DEFAULT NULL,
+      P_VALUE_TEXT        IN T_PARAM.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM         IN T_PARAM.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE        IN T_PARAM.VALUE_DATE%TYPE DEFAULT NULL)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura tworzy wszystkie wymagane parametry dla produktu z domyslnymi wartosciami.
+  *
+  * @param  PX_PRODUCT
+  */
+  PROCEDURE LX_CREATE(
+      PX_PRODUCT IN T_PRODUCT%ROWTYPE);
+  --------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura tworzy wszystkie wymagane parametry dla pakietu z domyslnymi wartosciami.
+  *
+  * @param  PX_PACKAGE
+  */
+  PROCEDURE LX_CREATE(
+      PX_PACKAGE IN T_PACKAGE%ROWTYPE);
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura tworzy wszystkie wymagane parametry dla ryzyka pakietu z domyslnymi wartosciami.
+  *
+  * @param  PX_PACKAGE_X_RISK
+  */
+  PROCEDURE LX_CREATE(
+      PX_PACKAGE_X_RISK IN T_PACKAGE_X_RISK%ROWTYPE);
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja modyfikuje obiekt PARAM.
+  *
+  * @param  PX_NEW
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_UPDATE(
+      PX_NEW IN T_PARAM%ROWTYPE)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura usuwa obiekt PARAM.
+  *
+  * @param  P_ID
+  */
+  PROCEDURE LX_DELETE(
+      P_ID IN T_PARAM.ID%TYPE);
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_ID
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_ID    IN T_PARAM.ID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_GUID
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_GUID  IN T_PARAM.GUID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_KEY
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_KEY   IN VARCHAR2,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_ID_PRODUCT
+  * @param  P_KEY
+  * @param  P_LOCK
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2,
+      P_LOCK       IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_ID_PACKAGE
+  * @param  P_KEY
+  * @param  P_LOCK
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2,
+      P_LOCK       IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt PARAM.
+  *
+  * @param  P_ID_PACKAGE_X_RISK
+  * @param  P_KEY
+  * @param  P_LOCK
+  *
+  * @return Obiekt PARAM
+  */
+  FUNCTION LX_OBJECT(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2,
+      P_LOCK              IN CHAR)
+    RETURN T_PARAM%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PRODUCT
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PRODUCT
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PRODUCT
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE_X_RISK
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE_X_RISK
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_ID_PACKAGE_X_RISK
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_TEXT(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_NUM(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca wartosc parametru obiektu PARAM.
+  *
+  * @param  P_KEY
+  *
+  * @return Wartosc parametru
+  */
+  FUNCTION LX_VALUE_DATE(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura eksportuje obiekty PARAM
+  *
+  * @param  P_DATE_FROM
+  * @param  P_TRANS_FROM
+  * @param  P_TRANS_TO
+  * @param  P_DATA
+  */
+  PROCEDURE LX_EXPORT(
+      P_DATE_FROM  IN DATE,
+      P_TRANS_FROM IN NUMBER,
+      P_TRANS_TO   IN NUMBER,
+      P_DATA       IN OUT NOCOPY CLOB);
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura importuje (tworzy/modyfikuje/usuwa) obiekt PARAM
+  *
+  * @param  P_REC_NO
+  * @param  P_RECORD
+  *
+  */
+  PROCEDURE LX_IMPORT(
+      P_REC_NO IN NUMBER,
+      P_RECORD IN VARCHAR2);
+  --------------------------------------------------------------------------------
+END PKG_PARAM;
+/
+
+
+CREATE OR REPLACE PACKAGE BODY PKG_PARAM
+AS
+  --------------------------------------------------------------------------------
+  PROCEDURE L_VALIDATE(
+      PX_NEW IN T_PARAM%ROWTYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_VALIDATE';
+    --
+    VX_DICT           T_DICT%ROWTYPE;
+    VX_PRODUCT        T_PRODUCT%ROWTYPE;
+    VX_PACKAGE        T_PACKAGE%ROWTYPE;
+    VX_PACKAGE_X_RISK T_PACKAGE_X_RISK%ROWTYPE;
+  BEGIN
+    VX_DICT := PKG_DICT.LX_OBJECT(
+                   P_ID    => PX_NEW.ID_DICT,
+                   P_LOCK  => 'N',
+                   P_RAISE => 'Y');
+    --
+    IF
+      PX_NEW.ID_PRODUCT IS NULL
+      AND PX_NEW.ID_PACKAGE IS NULL
+      AND PX_NEW.ID_PACKAGE_X_RISK IS NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.ID_PRODUCT IS NOT NULL
+      AND PX_NEW.ID_PACKAGE IS NULL
+      AND PX_NEW.ID_PACKAGE_X_RISK IS NULL
+    THEN
+      VX_PRODUCT := PKG_PRODUCT.LX_OBJECT(
+                        P_ID    => PX_NEW.ID_PRODUCT,
+                        P_LOCK  => 'Y',
+                        P_RAISE => 'Y');
+    ELSIF
+      PX_NEW.ID_PRODUCT IS NULL
+      AND PX_NEW.ID_PACKAGE IS NOT NULL
+      AND PX_NEW.ID_PACKAGE_X_RISK IS NULL
+    THEN
+      VX_PACKAGE := PKG_PACKAGE.LX_OBJECT(
+                        P_ID    => PX_NEW.ID_PACKAGE,
+                        P_LOCK  => 'Y',
+                        P_RAISE => 'Y');
+    ELSIF
+      PX_NEW.ID_PRODUCT IS NULL
+      AND PX_NEW.ID_PACKAGE IS NULL
+      AND PX_NEW.ID_PACKAGE_X_RISK IS NOT NULL
+    THEN
+      VX_PACKAGE_X_RISK := PKG_PACKAGE_X_RISK.LX_OBJECT(
+                               P_ID    => PX_NEW.ID_PACKAGE_X_RISK,
+                               P_LOCK  => 'Y',
+                               P_RAISE => 'Y');
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PARAM.ID_PACKAGE='||PX_NEW.ID_PACKAGE);
+    END IF;
+    --
+    -- VALUE_TEXT
+    -- VALUE_NUM
+    -- VALUE_DATE
+    --
+    IF
+      VX_DICT.DATA_TYPE IN ('TEXT', 'NUMBER', 'DATE')
+      AND VX_DICT.NULLABLE = 'Y'
+      AND PX_NEW.VALUE_TEXT IS NULL
+      AND PX_NEW.VALUE_NUM IS NULL
+      AND PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'TEXT'
+      AND VX_DICT.NULLABLE = 'Y'
+      AND PX_NEW.VALUE_TEXT IS NOT NULL
+      AND INSTR(NVL(VX_DICT.TEXT_ALLOWED, '#'||PX_NEW.VALUE_TEXT||'#'), '#'||PX_NEW.VALUE_TEXT||'#') > 0
+      AND PX_NEW.VALUE_NUM IS NULL
+      AND PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'TEXT'
+      AND VX_DICT.NULLABLE = 'N'
+      AND PX_NEW.VALUE_TEXT IS NOT NULL
+      AND INSTR(NVL(VX_DICT.TEXT_ALLOWED, '#'||PX_NEW.VALUE_TEXT||'#'), '#'||PX_NEW.VALUE_TEXT||'#') > 0
+      AND PX_NEW.VALUE_NUM IS NULL
+      AND PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'NUMBER'
+      AND VX_DICT.NULLABLE = 'Y'
+      AND PX_NEW.VALUE_TEXT IS NULL
+      AND PX_NEW.VALUE_NUM IS NOT NULL
+      AND PX_NEW.VALUE_DATE IS NULL
+      AND MOD(PX_NEW.VALUE_NUM * POWER(10, VX_DICT.NUM_SCALE), 1) = 0
+      AND PX_NEW.VALUE_NUM >= VX_DICT.NUM_MIN
+      AND PX_NEW.VALUE_NUM <= VX_DICT.NUM_MAX
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'NUMBER'
+      AND VX_DICT.NULLABLE = 'N'
+      AND PX_NEW.VALUE_TEXT IS NULL
+      AND PX_NEW.VALUE_NUM IS NOT NULL
+      AND PX_NEW.VALUE_DATE IS NULL
+      AND MOD(PX_NEW.VALUE_NUM * POWER(10, VX_DICT.NUM_SCALE), 1) = 0
+      AND PX_NEW.VALUE_NUM >= VX_DICT.NUM_MIN
+      AND PX_NEW.VALUE_NUM <= VX_DICT.NUM_MAX
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'DATE'
+      AND VX_DICT.NULLABLE = 'Y'
+      AND PX_NEW.VALUE_TEXT IS NULL
+      AND PX_NEW.VALUE_NUM IS NULL
+      AND PX_NEW.VALUE_DATE IS NOT NULL
+      AND PX_NEW.VALUE_DATE >= VX_DICT.DATE_MIN
+      AND PX_NEW.VALUE_DATE <= VX_DICT.DATE_MAX
+    THEN
+      NULL;
+    ELSIF
+      VX_DICT.DATA_TYPE = 'DATE'
+      AND VX_DICT.NULLABLE = 'N'
+      AND PX_NEW.VALUE_TEXT IS NULL
+      AND PX_NEW.VALUE_NUM IS NULL
+      AND PX_NEW.VALUE_DATE IS NOT NULL
+      AND PX_NEW.VALUE_DATE >= VX_DICT.DATE_MIN
+      AND PX_NEW.VALUE_DATE <= VX_DICT.DATE_MAX
+    THEN
+      NULL;
+    ELSE
+      CASE VX_DICT.DATA_TYPE
+      WHEN 'TEXT' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PARAM.VALUE_TEXT='||PX_NEW.VALUE_TEXT);
+      WHEN 'NUMBER' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PARAM.VALUE_NUM='||PX_NEW.VALUE_NUM);
+      WHEN 'DATE' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PARAM.VALUE_DATE='||PX_NEW.VALUE_DATE);
+      END CASE;
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_VALIDATE;
+  --------------------------------------------------------------------------------
+  FUNCTION L_HASH(
+      PX_NEW IN T_PARAM%ROWTYPE)
+    RETURN VARCHAR2
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_HASH';
+    --
+    V_CONTENT CLOB;
+    V_RESULT  VARCHAR2(32);
+  BEGIN
+    V_CONTENT := PX_NEW.ID_DICT||'#'||
+                 PX_NEW.ID_PRODUCT||'#'||
+                 PX_NEW.ID_PACKAGE||'#'||
+                 PX_NEW.ID_PACKAGE_X_RISK||'#'||
+                 PX_NEW.VALUE_TEXT||'#'||
+                 PX_NEW.VALUE_NUM||'#'||
+                 TO_CHAR(PX_NEW.VALUE_DATE,'YYYYMMDD')||'#';
+    --
+    V_RESULT := UTL_COMMON.LX_HASH(V_CONTENT);
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_HASH;
+  --------------------------------------------------------------------------------
+  PROCEDURE L_UPDATE(
+      PX_NEW   IN OUT NOCOPY T_PARAM%ROWTYPE,
+      P_CSV    IN UTL_CSV.T_CSV,
+      P_REC_NO IN NUMBER)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_UPDATE';
+    --
+    VX_NEW            T_PARAM%ROWTYPE;
+    VX_DICT           T_DICT%ROWTYPE;
+    VX_PRODUCT        T_PRODUCT%ROWTYPE;
+    VX_PACKAGE        T_PACKAGE%ROWTYPE;
+    VX_RISK           T_RISK%ROWTYPE;
+    VX_PACKAGE_X_RISK T_PACKAGE_X_RISK%ROWTYPE;
+  BEGIN
+    VX_NEW := PX_NEW;
+    --
+    VX_DICT := PKG_DICT.LX_OBJECT(
+                   P_KEY   => P_CSV(2),
+                   P_LOCK  => 'N',
+                   P_RAISE => 'N');
+    --
+    ASSERT(VX_DICT.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'DICT.KEY', P_CSV(2));
+    --
+    IF
+      P_CSV(3) IS NOT NULL
+    THEN
+      VX_PRODUCT := PKG_PRODUCT.LX_OBJECT(
+                        P_CODE  => P_CSV(3),
+                        P_LOCK  => 'N',
+                        P_RAISE => 'N');
+      --
+      ASSERT(VX_PRODUCT.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PRODUCT.CODE', P_CSV(3));
+    END IF;
+    --
+    IF
+      P_CSV(4) IS NOT NULL
+    THEN
+      VX_PACKAGE := PKG_PACKAGE.LX_OBJECT(
+                        P_CODE  => P_CSV(4),
+                        P_LOCK  => 'N',
+                        P_RAISE => 'N');
+      --
+      ASSERT(VX_PACKAGE.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PACKAGE.CODE', P_CSV(4));
+    END IF;
+    --
+    IF
+      P_CSV(5) IS NOT NULL
+    THEN
+      VX_RISK := PKG_RISK.LX_OBJECT(
+                     P_CODE  => P_CSV(5),
+                     P_LOCK  => 'N',
+                     P_RAISE => 'N');
+      --
+      ASSERT(VX_RISK.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'RISK.CODE', P_CSV(5));
+    END IF;
+    --
+    IF
+      VX_PRODUCT.ID IS NULL
+      AND VX_PACKAGE.ID IS NULL
+      AND VX_RISK.ID IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_PRODUCT.ID IS NOT NULL
+      AND VX_PACKAGE.ID IS NULL
+      AND VX_RISK.ID IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_PRODUCT.ID IS NULL
+      AND VX_PACKAGE.ID IS NOT NULL
+      AND VX_RISK.ID IS NULL
+    THEN
+      NULL;
+    ELSIF
+      VX_PRODUCT.ID IS NULL
+      AND VX_PACKAGE.ID IS NOT NULL
+      AND VX_RISK.ID IS NOT NULL
+    THEN
+      VX_PACKAGE_X_RISK := PKG_PACKAGE_X_RISK.LX_OBJECT(
+                               P_ID_PACKAGE => VX_PACKAGE.ID,
+                               P_ID_RISK    => VX_RISK.ID,
+                               P_LOCK       => 'N',
+                               P_RAISE      => 'N');
+      --
+      ASSERT(VX_PACKAGE_X_RISK.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'RISK.CODE', P_CSV(5));
+      --
+      VX_PACKAGE := NULL;
+      VX_RISK    := NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_20833, P_REC_NO);
+    END IF;
+    --
+    VX_NEW.ID_DICT           := VX_DICT.ID;
+    VX_NEW.ID_PRODUCT        := VX_PRODUCT.ID;
+    VX_NEW.ID_PACKAGE        := VX_PACKAGE.ID;
+    VX_NEW.ID_PACKAGE_X_RISK := VX_PACKAGE_X_RISK.ID;
+    VX_NEW.VALUE_TEXT        := P_CSV(6);
+    VX_NEW.VALUE_NUM         := P_CSV(7);
+    VX_NEW.VALUE_DATE        := TO_DATE(P_CSV(8), 'YYYY/MM/DD');
+    --
+    IF
+      VX_NEW.ID IS NOT NULL
+    THEN
+      ASSERT(NVL(VX_NEW.ID_DICT, 0) = NVL(PX_NEW.ID_DICT, 0), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PARAM.DICT', P_CSV(2));
+      ASSERT(NVL(VX_NEW.ID_PRODUCT, 0) = NVL(PX_NEW.ID_PRODUCT, 0), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PARAM.PRODUCT', P_CSV(3));
+      ASSERT(NVL(VX_NEW.ID_PACKAGE, 0) = NVL(PX_NEW.ID_PACKAGE, 0), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PARAM.PACKAGE', P_CSV(4));
+      ASSERT(NVL(VX_NEW.ID_PACKAGE_X_RISK, 0) = NVL(PX_NEW.ID_PACKAGE_X_RISK, 0), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PARAM.PACKAGE_X_RISK');
+    END IF;
+    --
+    PX_NEW := VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_UPDATE;
+  --------------------------------------------------------------------------------
+  FUNCTION L_OBJECT(
+      P_KEY     IN VARCHAR2,
+      P_PRODUCT IN VARCHAR2,
+      P_PACKAGE IN VARCHAR2,
+      P_RISK    IN VARCHAR2)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_KEY IS NOT NULL
+      AND P_PRODUCT IS NOT NULL
+      AND P_PACKAGE IS NULL
+      AND P_RISK IS NULL
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B,
+        T_PRODUCT C
+      WHERE
+        A.ID_REF IS NULL
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+        AND C.ID_REF IS NULL
+        AND C.ID = A.ID_PRODUCT
+        AND C.CODE = P_PRODUCT
+      FOR UPDATE NOWAIT;
+    ELSIF
+      P_KEY IS NOT NULL
+      AND P_PRODUCT IS NULL
+      AND P_PACKAGE IS NOT NULL
+      AND P_RISK IS NULL
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B,
+        T_PACKAGE C
+      WHERE
+        A.ID_REF IS NULL
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+        AND C.ID_REF IS NULL
+        AND C.ID = A.ID_PACKAGE
+        AND C.CODE = P_PACKAGE
+      FOR UPDATE NOWAIT;
+    ELSIF
+      P_KEY IS NOT NULL
+      AND P_PRODUCT IS NULL
+      AND P_PACKAGE IS NOT NULL
+      AND P_RISK IS NOT NULL
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B,
+        T_PACKAGE C,
+        T_RISK D,
+        T_PACKAGE_X_RISK E
+      WHERE
+        A.ID_REF IS NULL
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+        AND C.ID_REF IS NULL
+        AND C.CODE = P_PACKAGE
+        AND D.ID_REF IS NULL
+        AND D.CODE = P_RISK
+        AND E.ID_REF IS NULL
+        AND E.ID = A.ID_PACKAGE_X_RISK
+        AND E.ID_PACKAGE = C.ID
+        AND E.ID_RISK = D.ID
+      FOR UPDATE NOWAIT;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN NULL;
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_OBJECT;
+  --------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------
+  FUNCTION TX_UPDATE(
+      P_ID         IN T_PARAM.ID%TYPE,
+      P_VALUE_TEXT IN T_PARAM.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM  IN T_PARAM.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE IN T_PARAM.VALUE_DATE%TYPE DEFAULT NULL,
+      P_TRANS      IN T_PARAM.TRANS%TYPE)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.TX_UPDATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_TRANS IS NULL
+    THEN
+      VX_TRANS := PKG_TRANS.LX_CREATE_TRANS(C_ACTION);
+      --
+      PKG_TRANS.LX_APPEND_PARAM('P_ID', P_ID);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_TEXT', P_VALUE_TEXT);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_NUM', P_VALUE_NUM);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_DATE', P_VALUE_DATE);
+      PKG_TRANS.LX_APPEND_PARAM('P_TRANS', P_TRANS);
+    ELSE
+      VX_TRANS := PKG_TRANS.LX_JOIN_TRANS(P_TRANS);
+    END IF;
+    --
+    VX_NEW := PKG_PARAM.LX_OBJECT(
+                  P_ID    => P_ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW.VALUE_TEXT := P_VALUE_TEXT;
+    VX_NEW.VALUE_NUM  := P_VALUE_NUM;
+    VX_NEW.VALUE_DATE := P_VALUE_DATE;
+    --
+    VX_NEW := PKG_PARAM.LX_UPDATE(
+                  PX_NEW => VX_NEW);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_END_TRANS;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_CANCEL_TRANS;
+    ELSE
+      PKG_TRANS.LX_RAISE_FAILED;
+    END IF;
+  END TX_UPDATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_CREATE(
+      PX_NEW IN T_PARAM%ROWTYPE)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_NEW := PX_NEW;
+    --
+    VX_NEW.ID    := NVL(VX_NEW.ID, SEQ_PARAM.NEXTVAL);
+    VX_NEW.GUID  := NVL(VX_NEW.GUID, SYS_GUID());
+    VX_NEW.CTIME := SYSTIMESTAMP;
+    VX_NEW.UTIME := VX_NEW.CTIME;
+    VX_NEW.NOTM  := 0;
+    VX_NEW.TRANS := VX_TRANS.ID;
+    --
+    L_VALIDATE(PX_NEW => VX_NEW);
+    --
+    INSERT INTO T_PARAM VALUES VX_NEW;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_CREATE(
+      P_ID_DICT           IN T_PARAM.ID_DICT%TYPE,
+      P_ID_PRODUCT        IN T_PARAM.ID_PRODUCT%TYPE DEFAULT NULL,
+      P_ID_PACKAGE        IN T_PARAM.ID_PACKAGE%TYPE DEFAULT NULL,
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE DEFAULT NULL,
+      P_VALUE_TEXT        IN T_PARAM.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM         IN T_PARAM.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE        IN T_PARAM.VALUE_DATE%TYPE DEFAULT NULL)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_NEW.ID_DICT           := P_ID_DICT;
+    VX_NEW.ID_PRODUCT        := P_ID_PRODUCT;
+    VX_NEW.ID_PACKAGE        := P_ID_PACKAGE;
+    VX_NEW.ID_PACKAGE_X_RISK := P_ID_PACKAGE_X_RISK;
+    VX_NEW.VALUE_TEXT        := P_VALUE_TEXT;
+    VX_NEW.VALUE_NUM         := P_VALUE_NUM;
+    VX_NEW.VALUE_DATE        := P_VALUE_DATE;
+    --
+    VX_NEW := PKG_PARAM.LX_CREATE(
+                  PX_NEW => VX_NEW);
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_CREATE(
+      PX_PRODUCT IN T_PRODUCT%ROWTYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    -- PARAMETRY WSPOLNE
+    --
+    FOR X IN (
+      SELECT
+        A.ID AS ID_DICT,
+        A.VALUE_TEXT,
+        A.VALUE_NUM,
+        A.VALUE_DATE
+      FROM
+        T_DICT A
+      WHERE
+        A.ID_REF IS NULL
+        AND A.CATEGORY IN ('PRODUCT', 'I.PRODUCT')
+      ORDER BY
+        A.CATEGORY DESC,
+        A.ORDER_NO
+    ) LOOP
+      VX_NEW := PKG_PARAM.LX_CREATE(
+                    P_ID_DICT    => X.ID_DICT,
+                    P_ID_PRODUCT => PX_PRODUCT.ID,
+                    P_VALUE_TEXT => X.VALUE_TEXT,
+                    P_VALUE_NUM  => X.VALUE_NUM,
+                    P_VALUE_DATE => X.VALUE_DATE);
+    END LOOP X;
+    --
+    -- PARAMETRY DLA SERVICE_MODEL = E
+    --
+    IF
+      PX_PRODUCT.SERVICE_MODEL = 'E'
+    THEN
+      FOR X IN (
+        SELECT
+          A.ID AS ID_DICT,
+          A.VALUE_TEXT,
+          A.VALUE_NUM,
+          A.VALUE_DATE
+        FROM
+          T_DICT A
+        WHERE
+          A.ID_REF IS NULL
+          AND A.CATEGORY  = 'E.PRODUCT'
+        ORDER BY
+          A.CATEGORY DESC,
+          A.ORDER_NO
+      ) LOOP
+        VX_NEW := PKG_PARAM.LX_CREATE(
+                      P_ID_DICT    => X.ID_DICT,
+                      P_ID_PRODUCT => PX_PRODUCT.ID,
+                      P_VALUE_TEXT => X.VALUE_TEXT,
+                      P_VALUE_NUM  => X.VALUE_NUM,
+                      P_VALUE_DATE => X.VALUE_DATE);
+      END LOOP X;
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_CREATE(
+      PX_PACKAGE IN T_PACKAGE%ROWTYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS   T_TRANS%ROWTYPE;
+    VX_PRODUCT T_PRODUCT%ROWTYPE;
+    VX_NEW     T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_PRODUCT := PKG_PRODUCT.LX_OBJECT(
+                      P_ID    => PX_PACKAGE.ID_PRODUCT,
+                      P_LOCK  => 'N',
+                      P_RAISE => 'Y');
+    --
+    -- PARAMETRY WSPOLNE
+    --
+    FOR X IN (
+      SELECT
+        A.ID AS ID_DICT,
+        A.VALUE_TEXT,
+        A.VALUE_NUM,
+        A.VALUE_DATE
+      FROM
+        T_DICT A
+      WHERE
+        A.ID_REF IS NULL
+        AND A.CATEGORY IN ('PACKAGE', 'I.PACKAGE')
+      ORDER BY
+        A.CATEGORY DESC,
+        A.ORDER_NO
+    ) LOOP
+      VX_NEW := PKG_PARAM.LX_CREATE(
+                    P_ID_DICT    => X.ID_DICT,
+                    P_ID_PACKAGE => PX_PACKAGE.ID,
+                    P_VALUE_TEXT => X.VALUE_TEXT,
+                    P_VALUE_NUM  => X.VALUE_NUM,
+                    P_VALUE_DATE => X.VALUE_DATE);
+    END LOOP X;
+    --
+    -- PARAMETRY DLA SERVICE_MODEL = E
+    --
+    IF
+      VX_PRODUCT.SERVICE_MODEL = 'E'
+    THEN
+      FOR X IN (
+        SELECT
+          ID AS ID_DICT,
+          VALUE_TEXT,
+          VALUE_NUM,
+          VALUE_DATE
+        FROM
+          T_DICT
+        WHERE
+          ID_REF IS NULL
+          AND CATEGORY = 'E.PACKAGE'
+        ORDER BY
+          ORDER_NO
+      ) LOOP
+        VX_NEW := PKG_PARAM.LX_CREATE(
+                      P_ID_DICT    => X.ID_DICT,
+                      P_ID_PACKAGE => PX_PACKAGE.ID,
+                      P_VALUE_TEXT => X.VALUE_TEXT,
+                      P_VALUE_NUM  => X.VALUE_NUM,
+                      P_VALUE_DATE => X.VALUE_DATE);
+      END LOOP X;
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_CREATE(
+      PX_PACKAGE_X_RISK IN T_PACKAGE_X_RISK%ROWTYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS   T_TRANS%ROWTYPE;
+    VX_PACKAGE T_PACKAGE%ROWTYPE;
+    VX_PRODUCT T_PRODUCT%ROWTYPE;
+    VX_NEW     T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_PACKAGE := PKG_PACKAGE.LX_OBJECT(
+                      P_ID    => PX_PACKAGE_X_RISK.ID_PACKAGE,
+                      P_LOCK  => 'N',
+                      P_RAISE => 'Y');
+    --
+    VX_PRODUCT := PKG_PRODUCT.LX_OBJECT(
+                      P_ID    => VX_PACKAGE.ID_PRODUCT,
+                      P_LOCK  => 'N',
+                      P_RAISE => 'Y');
+    --
+    -- PARAMETRY WSPOLNE DLA RYZYK
+    --
+    FOR X IN (
+      SELECT
+        A.ID AS ID_DICT,
+        A.VALUE_TEXT,
+        A.VALUE_NUM,
+        A.VALUE_DATE
+      FROM
+        T_DICT A
+      WHERE
+        A.ID_REF IS NULL
+        AND A.CATEGORY  IN ('PACKAGE.RISK', 'I.PACKAGE.RISK')
+      ORDER BY
+        A.CATEGORY DESC,
+        A.ORDER_NO
+    ) LOOP
+      VX_NEW := PKG_PARAM.LX_CREATE(
+                    P_ID_DICT           => X.ID_DICT,
+                    P_ID_PACKAGE_X_RISK => PX_PACKAGE_X_RISK.ID,
+                    P_VALUE_TEXT        => X.VALUE_TEXT,
+                    P_VALUE_NUM         => X.VALUE_NUM,
+                    P_VALUE_DATE        => X.VALUE_DATE);
+    END LOOP X;
+    --
+    -- PARAMETRY DLA SERVICE_MODEL = E
+    --
+    IF
+      VX_PRODUCT.SERVICE_MODEL = 'E'
+    THEN
+      FOR X IN (
+        SELECT
+          A.ID AS ID_DICT,
+          A.VALUE_TEXT,
+          A.VALUE_NUM,
+          A.VALUE_DATE
+        FROM
+          T_DICT A
+        WHERE
+          A.ID_REF IS NULL
+          AND A.CATEGORY = 'E.PACKAGE.RISK'
+        ORDER BY
+          A.ORDER_NO
+      ) LOOP
+        VX_NEW := PKG_PARAM.LX_CREATE(
+                      P_ID_DICT           => X.ID_DICT,
+                      P_ID_PACKAGE_X_RISK => PX_PACKAGE_X_RISK.ID,
+                      P_VALUE_TEXT        => X.VALUE_TEXT,
+                      P_VALUE_NUM         => X.VALUE_NUM,
+                      P_VALUE_DATE        => X.VALUE_DATE);
+      END LOOP X;
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_UPDATE(
+      PX_NEW IN T_PARAM%ROWTYPE)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_UPDATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_OLD   T_PARAM%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_OLD := PKG_PARAM.LX_OBJECT(
+                  P_ID    => PX_NEW.ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW := PX_NEW;
+    --
+    VX_NEW.UTIME := SYSTIMESTAMP;
+    VX_NEW.NOTM  := VX_NEW.NOTM + 1;
+    VX_NEW.TRANS := VX_TRANS.ID;
+    --
+    L_VALIDATE(PX_NEW => VX_NEW);
+    --
+    INSERT INTO TJ_PARAM VALUES VX_OLD;
+    UPDATE T_PARAM SET ROW = VX_NEW WHERE ID = VX_NEW.ID;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_UPDATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_DELETE(
+      P_ID IN T_PARAM.ID%TYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_DELETE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_OLD   T_PARAM%ROWTYPE;
+    VX_NEW   T_PARAM%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_OLD := PKG_PARAM.LX_OBJECT(
+                  P_ID    => P_ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW := VX_OLD;
+    --
+    VX_NEW.ID_REF := VX_NEW.ID;
+    VX_NEW.UTIME  := SYSTIMESTAMP;
+    VX_NEW.NOTM   := VX_NEW.NOTM + 1;
+    VX_NEW.TRANS  := VX_TRANS.ID;
+    --
+    INSERT INTO TJ_PARAM VALUES VX_OLD;
+    UPDATE T_PARAM SET ROW = VX_NEW WHERE ID = VX_NEW.ID;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_DELETE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_ID    IN T_PARAM.ID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM
+      WHERE
+        ID_REF IS NULL
+        AND ID = P_ID
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM
+      WHERE
+        ID_REF IS NULL
+        AND ID = P_ID;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_GUID  IN T_PARAM.GUID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM
+      WHERE
+        ID_REF IS NULL
+        AND GUID = P_GUID
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM
+      WHERE
+        ID_REF IS NULL
+        AND GUID = P_GUID;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_KEY   IN VARCHAR2,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2,
+      P_LOCK       IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PRODUCT = P_ID_PRODUCT
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PRODUCT = P_ID_PRODUCT
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2,
+      P_LOCK       IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PACKAGE = P_ID_PACKAGE
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PACKAGE = P_ID_PACKAGE
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2,
+      P_LOCK              IN CHAR)
+    RETURN T_PARAM%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_PARAM%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PACKAGE_X_RISK = P_ID_PACKAGE_X_RISK
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        A.*
+      INTO
+        VX_NEW
+      FROM
+        T_PARAM A,
+        T_DICT B
+      WHERE
+        A.ID_REF IS NULL
+        AND A.ID_PACKAGE_X_RISK = P_ID_PACKAGE_X_RISK
+        AND B.ID = A.ID_DICT
+        AND B.KEY = P_KEY;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_TEXT';
+    --
+    V_RESULT T_PARAM.VALUE_TEXT%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_TEXT
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PRODUCT = P_ID_PRODUCT
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'TEXT'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_TEXT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_NUM';
+    --
+    V_RESULT T_PARAM.VALUE_NUM%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_NUM
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PRODUCT = P_ID_PRODUCT
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'NUMBER'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_NUM;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PRODUCT IN T_PARAM.ID_PRODUCT%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_DATE';
+    --
+    V_RESULT T_PARAM.VALUE_DATE%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_DATE
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PRODUCT = P_ID_PRODUCT
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'DATE'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_DATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_TEXT';
+    --
+    V_RESULT T_PARAM.VALUE_TEXT%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_TEXT
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PACKAGE = P_ID_PACKAGE
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'TEXT'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_TEXT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_NUM';
+    --
+    V_RESULT T_PARAM.VALUE_NUM%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_NUM
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PACKAGE = P_ID_PACKAGE
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'NUMBER'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_NUM;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PACKAGE IN T_PARAM.ID_PACKAGE%TYPE,
+      P_KEY        IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_DATE';
+    --
+    V_RESULT T_PARAM.VALUE_DATE%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_DATE
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID_PACKAGE = P_ID_PACKAGE
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'DATE'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_DATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_TEXT(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_TEXT';
+    --
+    V_RESULT T_PARAM.VALUE_TEXT%TYPE;
+  BEGIN
+    SELECT
+      B.VALUE_TEXT
+    INTO
+      V_RESULT
+    FROM
+      T_PACKAGE_X_RISK A,
+      T_PARAM B,
+      T_DICT C
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID = P_ID_PACKAGE_X_RISK
+      AND B.ID_REF IS NULL
+      AND B.ID_PACKAGE_X_RISK = A.ID
+      AND C.ID = B.ID_DICT
+      AND C.DATA_TYPE = 'TEXT'
+      AND C.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_TEXT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_NUM(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_NUM';
+    --
+    V_RESULT T_PARAM.VALUE_NUM%TYPE;
+  BEGIN
+    SELECT
+      B.VALUE_NUM
+    INTO
+      V_RESULT
+    FROM
+      T_PACKAGE_X_RISK A,
+      T_PARAM B,
+      T_DICT C
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID = P_ID_PACKAGE_X_RISK
+      AND B.ID_REF IS NULL
+      AND B.ID_PACKAGE_X_RISK = A.ID
+      AND C.ID = B.ID_DICT
+      AND C.DATA_TYPE = 'NUMBER'
+      AND C.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_NUM;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_DATE(
+      P_ID_PACKAGE_X_RISK IN T_PARAM.ID_PACKAGE_X_RISK%TYPE,
+      P_KEY               IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_DATE';
+    --
+    V_RESULT T_PARAM.VALUE_DATE%TYPE;
+  BEGIN
+    SELECT
+      B.VALUE_DATE
+    INTO
+      V_RESULT
+    FROM
+      T_PACKAGE_X_RISK A,
+      T_PARAM B,
+      T_DICT C
+    WHERE
+      A.ID_REF IS NULL
+      AND A.ID = P_ID_PACKAGE_X_RISK
+      AND B.ID_REF IS NULL
+      AND B.ID_PACKAGE_X_RISK = A.ID
+      AND C.ID = B.ID_DICT
+      AND C.DATA_TYPE = 'DATE'
+      AND C.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_DATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_TEXT(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_TEXT%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_TEXT';
+    --
+    V_RESULT T_PARAM.VALUE_TEXT%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_TEXT
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'TEXT'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_TEXT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_NUM(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_NUM%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_NUM';
+    --
+    V_RESULT T_PARAM.VALUE_NUM%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_NUM
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+      AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'NUMBER'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_NUM;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_VALUE_DATE(
+      P_KEY IN VARCHAR2)
+    RETURN T_PARAM.VALUE_DATE%TYPE RESULT_CACHE
+  IS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_VALUE_DATE';
+    --
+    V_RESULT T_PARAM.VALUE_DATE%TYPE;
+  BEGIN
+    SELECT
+      A.VALUE_DATE
+    INTO
+      V_RESULT
+    FROM
+      T_PARAM A,
+      T_DICT B
+    WHERE
+      A.ID_REF IS NULL
+       AND B.ID = A.ID_DICT
+      AND B.DATA_TYPE = 'DATE'
+      AND B.KEY = P_KEY;
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_VALUE_DATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_EXPORT(
+      P_DATE_FROM  IN DATE,
+      P_TRANS_FROM IN NUMBER,
+      P_TRANS_TO   IN NUMBER,
+      P_DATA       IN OUT NOCOPY CLOB)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_EXPORT';
+    C_EOL    CONSTANT CHAR(2) := CHR(13)||CHR(10);
+    --
+    V_RECORD    VARCHAR2(32767);
+    V_VALIDATED BOOLEAN := FALSE;
+    V_COUNT1    PLS_INTEGER;
+    V_COUNT2    PLS_INTEGER;
+    V_OPERATION VARCHAR2(15);
+  BEGIN
+    --
+    -- SECTION
+    --
+    V_RECORD := '"PARAM"'||C_EOL;
+    --
+    DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    --
+    -- HEADER
+    --
+    V_RECORD := '"OPERATION";"DICT.KEY";"PRODUCT.CODE";"PACKAGE.CODE";"RISK.CODE";"PARAM.VALUE_TEXT";"PARAM.VALUE_NUM";"PARAM.VALUE_DATE"';
+    --
+    V_COUNT1 := UTL_CSV.LX_TOKEN_COUNT(
+                    P_TEXT        => V_RECORD,
+                    P_DELIMITER   => ';',
+                    P_ENCLOSED_BY => '"');
+    --
+    V_RECORD := V_RECORD||C_EOL;
+    --
+    DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    --
+    -- OBJECTS
+    --
+    FOR X IN (
+      SELECT
+        B.KEY AS DICT,
+        C.CODE AS PRODUCT,
+        F.CODE AS PACKAGE,
+        G.CODE AS RISK,
+        A.VALUE_TEXT,
+        A.VALUE_NUM,
+        TO_CHAR(A.VALUE_DATE, 'YYYY/MM/DD') AS VALUE_DATE,
+        A.CTIME,
+        A.ID_REF
+      FROM
+        T_PARAM A,
+        T_DICT B,
+        T_PRODUCT C,
+        T_PACKAGE D,
+        T_PACKAGE_X_RISK E,
+        T_PACKAGE F,
+        T_RISK G
+      WHERE
+        A.UTIME >= NVL(P_DATE_FROM, A.UTIME)
+        AND A.TRANS >= NVL(P_TRANS_FROM, A.TRANS)
+        AND A.TRANS <= NVL(P_TRANS_TO, A.TRANS)
+        AND B.ID = A.ID_DICT
+        AND C.ID(+) = A.ID_PRODUCT
+        AND D.ID(+) = A.ID_PACKAGE
+        AND E.ID(+) = A.ID_PACKAGE_X_RISK
+        AND F.ID(+) = COALESCE(D.ID, E.ID_PACKAGE)
+        AND G.ID(+) = E.ID_RISK
+      ORDER BY
+        C.CODE,
+        F.CODE,
+        G.CODE,
+        B.KEY,
+        A.ID
+    ) LOOP
+      IF
+        X.CTIME < P_DATE_FROM AND X.ID_REF IS NULL
+      THEN
+        V_OPERATION := 'A';
+      ELSIF
+        X.CTIME < P_DATE_FROM AND X.ID_REF IS NOT NULL
+      THEN
+        V_OPERATION := 'D';
+      ELSIF
+        X.CTIME >= P_DATE_FROM AND X.ID_REF IS NULL
+      THEN
+        V_OPERATION := 'A';
+      ELSE
+        V_OPERATION := 'A/D';
+        --
+        CONTINUE;
+      END IF;
+      --
+      V_RECORD :=
+          '"'||V_OPERATION||'";'||
+          '"'||X.DICT||'";'||
+          '"'||X.PRODUCT||'";'||
+          '"'||X.PACKAGE||'";'||
+          '"'||X.RISK||'";'||
+          '"'||X.VALUE_TEXT||'";'||
+          '"'||X.VALUE_NUM||'";'||
+          '"'||X.VALUE_DATE||'"';
+      --
+      IF
+        V_VALIDATED = FALSE
+      THEN
+        V_COUNT2 := UTL_CSV.LX_TOKEN_COUNT(
+                        P_TEXT        => V_RECORD,
+                        P_DELIMITER   => ';',
+                        P_ENCLOSED_BY => '"');
+        --
+        ASSERT(V_COUNT1 = V_COUNT2, C_ACTION, UTL_ERROR.E_20876);
+        --
+        V_VALIDATED := TRUE;
+      END IF;
+      --
+      V_RECORD := V_RECORD||C_EOL;
+      --
+      DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    END LOOP X;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_EXPORT;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_IMPORT(
+      P_REC_NO IN NUMBER,
+      P_RECORD IN VARCHAR2)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_IMPORT';
+    --
+    VX_OLD T_PARAM%ROWTYPE;
+    VX_NEW T_PARAM%ROWTYPE;
+    --
+    V_CSV UTL_CSV.T_CSV;
+  BEGIN
+    V_CSV := UTL_CSV.LX_TOKENIZER(
+                 P_TEXT        => P_RECORD,
+                 P_DELIMITER   => ';',
+                 P_ENCLOSED_BY => '"',
+                 P_TRIM        => 'Y');
+    --
+    ASSERT(V_CSV.COUNT = 8, C_ACTION, UTL_ERROR.E_20832, P_REC_NO);
+    --
+    IF
+      V_CSV(1) IS NULL
+    THEN
+      RETURN;
+    END IF;
+    --
+    ASSERT(V_CSV(1) IN ('A', 'D'), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'OPERATION', V_CSV(1));
+    --
+    VX_OLD := L_OBJECT(
+                  P_KEY     => V_CSV(2),
+                  P_PRODUCT => V_CSV(3),
+                  P_PACKAGE => V_CSV(4),
+                  P_RISK    => V_CSV(5));
+    --
+    VX_NEW := VX_OLD;
+    --
+    CASE V_CSV(1)
+    WHEN 'A' THEN
+      L_UPDATE(
+          PX_NEW   => VX_NEW,
+          P_CSV    => V_CSV,
+          P_REC_NO => P_REC_NO);
+      --
+      IF
+        VX_NEW.ID IS NULL
+      THEN
+        VX_NEW := PKG_PARAM.LX_CREATE(PX_NEW => VX_NEW);
+      ELSE
+        IF
+          L_HASH(VX_OLD) != L_HASH(VX_NEW)
+        THEN
+          VX_NEW := PKG_PARAM.LX_UPDATE(PX_NEW => VX_NEW);
+        END IF;
+      END IF;
+    WHEN 'D' THEN
+      ASSERT(VX_NEW.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'PARAM.GUID', V_CSV(2));
+      --
+      PKG_PARAM.LX_DELETE(P_ID => VX_NEW.ID);
+    END CASE;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_IMPORT;
+  --------------------------------------------------------------------------------
+END PKG_PARAM;
+/
+
+CREATE OR REPLACE PACKAGE PKG_DICT
+AS
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja tworzy obiekt DICT.
+  *
+  * @param  P_GUID
+  * @param  P_CATEGORY
+  * @param  P_KEY
+  * @param  P_DATA_TYPE
+  * @param  P_NULLABLE
+  * @param  P_TEXT_ALLOWED
+  * @param  P_NUM_SCALE
+  * @param  P_NUM_MIN
+  * @param  P_NUM_MAX
+  * @param  P_DATE_MIN
+  * @param  P_DATE_MAX
+  * @param  P_VALUE_TEXT
+  * @param  P_VALUE_NUM
+  * @param  P_VALUE_DATE
+  * @param  P_ORDER_NO
+  * @param  P_DESCRIPTION
+  * @param  P_TRANS
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION TX_CREATE(
+      P_GUID         IN T_DICT.GUID%TYPE,
+      P_CATEGORY     IN T_DICT.CATEGORY%TYPE,
+      P_KEY          IN T_DICT.KEY%TYPE,
+      P_DATA_TYPE    IN T_DICT.DATA_TYPE%TYPE,
+      P_NULLABLE     IN T_DICT.NULLABLE%TYPE,
+      P_TEXT_ALLOWED IN T_DICT.TEXT_ALLOWED%TYPE DEFAULT NULL,
+      P_NUM_SCALE    IN T_DICT.NUM_SCALE%TYPE DEFAULT NULL,
+      P_NUM_MIN      IN T_DICT.NUM_MIN%TYPE DEFAULT NULL,
+      P_NUM_MAX      IN T_DICT.NUM_MAX%TYPE DEFAULT NULL,
+      P_DATE_MIN     IN T_DICT.DATE_MIN%TYPE DEFAULT NULL,
+      P_DATE_MAX     IN T_DICT.DATE_MAX%TYPE DEFAULT NULL,
+      P_VALUE_TEXT   IN T_DICT.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM    IN T_DICT.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE   IN T_DICT.VALUE_DATE%TYPE DEFAULT NULL,
+      P_ORDER_NO     IN T_DICT.ORDER_NO%TYPE DEFAULT NULL,
+      P_DESCRIPTION  IN T_DICT.DESCRIPTION%TYPE DEFAULT NULL,
+      P_TRANS        IN T_DICT.TRANS%TYPE DEFAULT NULL)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja modyfikuje obiekt DICT.
+  *
+  * @param  P_ID
+  * @param  P_NULLABLE
+  * @param  P_TEXT_ALLOWED
+  * @param  P_NUM_SCALE
+  * @param  P_NUM_MIN
+  * @param  P_NUM_MAX
+  * @param  P_DATE_MIN
+  * @param  P_DATE_MAX
+  * @param  P_VALUE_TEXT
+  * @param  P_VALUE_NUM
+  * @param  P_VALUE_DATE
+  * @param  P_ORDER_NO
+  * @param  P_DESCRIPTION
+  * @param  P_TRANS
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION TX_UPDATE(
+      P_ID           IN T_DICT.ID%TYPE,
+      P_NULLABLE     IN T_DICT.NULLABLE%TYPE,
+      P_TEXT_ALLOWED IN T_DICT.TEXT_ALLOWED%TYPE DEFAULT NULL,
+      P_NUM_SCALE    IN T_DICT.NUM_SCALE%TYPE DEFAULT NULL,
+      P_NUM_MIN      IN T_DICT.NUM_MIN%TYPE DEFAULT NULL,
+      P_NUM_MAX      IN T_DICT.NUM_MAX%TYPE DEFAULT NULL,
+      P_DATE_MIN     IN T_DICT.DATE_MIN%TYPE DEFAULT NULL,
+      P_DATE_MAX     IN T_DICT.DATE_MAX%TYPE DEFAULT NULL,
+      P_VALUE_TEXT   IN T_DICT.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM    IN T_DICT.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE   IN T_DICT.VALUE_DATE%TYPE DEFAULT NULL,
+      P_ORDER_NO     IN T_DICT.ORDER_NO%TYPE DEFAULT NULL,
+      P_DESCRIPTION  IN T_DICT.DESCRIPTION%TYPE DEFAULT NULL,
+      P_TRANS        IN T_DICT.TRANS%TYPE DEFAULT NULL)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura usuwa obiekt DICT.
+  *
+  * @param  P_ID
+  * @param  P_TRANS
+  */
+  PROCEDURE TX_DELETE(
+      P_ID    IN T_DICT.ID%TYPE,
+      P_TRANS IN T_DICT.TRANS%TYPE DEFAULT NULL);
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja tworzy obiekt DICT.
+  *
+  * @param  PX_NEW
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION LX_CREATE(
+      PX_NEW IN T_DICT%ROWTYPE)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja modyfikuje obiekt DICT.
+  *
+  * @param  PX_NEW
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION LX_UPDATE(
+      PX_NEW IN T_DICT%ROWTYPE)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura usuwa obiekt DICT.
+  *
+  * @param  P_ID
+  */
+  PROCEDURE LX_DELETE(
+      P_ID IN T_DICT.ID%TYPE);
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt DICT.
+  *
+  * @param  P_ID
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION LX_OBJECT(
+      P_ID    IN T_DICT.ID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt DICT.
+  *
+  * @param  P_GUID
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION LX_OBJECT(
+      P_GUID  IN T_DICT.GUID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Funkcja wraca obiekt DICT.
+  *
+  * @param  P_KEY
+  * @param  P_LOCK
+  * @param  P_RAISE
+  *
+  * @return Obiekt DICT
+  */
+  FUNCTION LX_OBJECT(
+      P_KEY   IN T_DICT.KEY%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE;
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura eksportuje obiekty DICT
+  *
+  * @param  P_DATE_FROM
+  * @param  P_TRANS_FROM
+  * @param  P_TRANS_TO
+  * @param  P_DATA
+  */
+  PROCEDURE LX_EXPORT(
+      P_DATE_FROM  IN DATE,
+      P_TRANS_FROM IN NUMBER,
+      P_TRANS_TO   IN NUMBER,
+      P_DATA       IN OUT NOCOPY CLOB);
+  --------------------------------------------------------------------------------
+  /*
+  * Procedura importuje (tworzy/modyfikuje/usuwa) obiekt DICT
+  *
+  * @param  P_REC_NO
+  * @param  P_RECORD
+  *
+  */
+  PROCEDURE LX_IMPORT(
+      P_REC_NO IN NUMBER,
+      P_RECORD IN VARCHAR2);
+  --------------------------------------------------------------------------------
+END PKG_DICT;
+/
+
+
+CREATE OR REPLACE PACKAGE BODY PKG_DICT
+AS
+  --------------------------------------------------------------------------------
+  PROCEDURE L_VALIDATE(
+      PX_NEW IN T_DICT%ROWTYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_VALIDATE';
+    --
+    V_NUM1 PLS_INTEGER;
+  BEGIN
+    ASSERT(PX_NEW.CATEGORY IS NOT NULL, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.CATEGORY='||PX_NEW.CATEGORY);
+    ASSERT(PX_NEW.KEY IS NOT NULL,C_ACTION,  UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.KEY='||PX_NEW.KEY);
+    ASSERT(PX_NEW.DATA_TYPE IN ('TEXT', 'NUMBER', 'DATE'), C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.DATA_TYPE='||PX_NEW.DATA_TYPE);
+    ASSERT(PX_NEW.NULLABLE IN ('Y', 'N'), C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.NULLABLE='||PX_NEW.NULLABLE);
+    -- TEXT_ALLOWED
+    IF
+      PX_NEW.DATA_TYPE = 'TEXT' AND
+      PX_NEW.TEXT_ALLOWED IS NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'TEXT' AND
+      PX_NEW.TEXT_ALLOWED IS NOT NULL AND
+      REGEXP_COUNT(PX_NEW.TEXT_ALLOWED, '^(#[A-Za-z0-9().,_+-]+)+#$', 1, 'c') > 0
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('NUMBER', 'DATE') AND
+      PX_NEW.TEXT_ALLOWED IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.TEXT_ALLOWED='||PX_NEW.TEXT_ALLOWED);
+    END IF;
+    -- NUM_SCALE
+    IF
+      PX_NEW.DATA_TYPE = 'NUMBER' AND
+      PX_NEW.NUM_SCALE IS NOT NULL AND
+      MOD(PX_NEW.NUM_SCALE, 1) = 0 AND
+      PX_NEW.NUM_SCALE >= 0
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'DATE') AND
+      PX_NEW.NUM_SCALE IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.NUM_SCALE='||PX_NEW.NUM_SCALE);
+    END IF;
+    -- NUM_MIN
+    IF
+      PX_NEW.DATA_TYPE = 'NUMBER' AND
+      PX_NEW.NUM_MIN IS NOT NULL AND
+      MOD(PX_NEW.NUM_MIN * POWER(10, PX_NEW.NUM_SCALE), 1) = 0
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'DATE') AND
+      PX_NEW.NUM_MIN IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.NUM_MIN='||PX_NEW.NUM_MIN);
+    END IF;
+    -- NUM_MAX
+    IF
+      PX_NEW.DATA_TYPE = 'NUMBER' AND
+      PX_NEW.NUM_MAX IS NOT NULL AND
+      MOD(PX_NEW.NUM_MAX * POWER(10, PX_NEW.NUM_SCALE), 1) = 0 AND
+      PX_NEW.NUM_MAX >= PX_NEW.NUM_MIN
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'DATE') AND
+      PX_NEW.NUM_MAX IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.NUM_MAX='||PX_NEW.NUM_MAX);
+    END IF;
+    -- DATE_MIN
+    IF
+      PX_NEW.DATA_TYPE = 'DATE' AND
+      PX_NEW.DATE_MIN IS NOT NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'NUMBER') AND
+      PX_NEW.DATE_MIN IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.DATE_MIN='||PX_NEW.DATE_MIN);
+    END IF;
+    -- DATE_MAX
+    IF
+      PX_NEW.DATA_TYPE = 'DATE' AND
+      PX_NEW.DATE_MAX IS NOT NULL AND
+      PX_NEW.DATE_MAX >= PX_NEW.DATE_MIN
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'NUMBER') AND
+      PX_NEW.DATE_MAX IS NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.DATE_MAX='||PX_NEW.DATE_MAX);
+    END IF;
+    -- VALUE_TEXT
+    -- VALUE_NUM
+    -- VALUE_DATE
+    IF
+      PX_NEW.DATA_TYPE IN ('TEXT', 'NUMBER', 'DATE') AND
+      PX_NEW.NULLABLE = 'Y' AND
+      PX_NEW.VALUE_TEXT IS NULL AND
+      PX_NEW.VALUE_NUM IS NULL AND
+      PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'TEXT' AND
+      PX_NEW.NULLABLE = 'Y' AND
+      PX_NEW.VALUE_TEXT IS NOT NULL AND
+      INSTR(NVL(PX_NEW.TEXT_ALLOWED, '#'||PX_NEW.VALUE_TEXT||'#'), '#'||PX_NEW.VALUE_TEXT||'#') > 0 AND
+      PX_NEW.VALUE_NUM IS NULL AND
+      PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'TEXT' AND
+      PX_NEW.NULLABLE = 'N' AND
+      PX_NEW.VALUE_TEXT IS NOT NULL AND
+      INSTR(NVL(PX_NEW.TEXT_ALLOWED, '#'||PX_NEW.VALUE_TEXT||'#'), '#'||PX_NEW.VALUE_TEXT||'#') > 0 AND
+      PX_NEW.VALUE_NUM IS NULL AND
+      PX_NEW.VALUE_DATE IS NULL
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'NUMBER' AND
+      PX_NEW.NULLABLE = 'Y' AND
+      PX_NEW.VALUE_TEXT IS NULL AND
+      PX_NEW.VALUE_NUM IS NOT NULL AND
+      PX_NEW.VALUE_DATE IS NULL AND
+      MOD(PX_NEW.VALUE_NUM * POWER(10, PX_NEW.NUM_SCALE), 1) = 0 AND
+      PX_NEW.VALUE_NUM >= PX_NEW.NUM_MIN AND
+      PX_NEW.VALUE_NUM <= PX_NEW.NUM_MAX
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'NUMBER' AND
+      PX_NEW.NULLABLE = 'N' AND
+      PX_NEW.VALUE_TEXT IS NULL AND
+      PX_NEW.VALUE_NUM IS NOT NULL AND
+      PX_NEW.VALUE_DATE IS NULL AND
+      MOD(PX_NEW.VALUE_NUM * POWER(10, PX_NEW.NUM_SCALE), 1) = 0 AND
+      PX_NEW.VALUE_NUM >= PX_NEW.NUM_MIN AND
+      PX_NEW.VALUE_NUM <= PX_NEW.NUM_MAX
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'DATE' AND
+      PX_NEW.NULLABLE = 'Y' AND
+      PX_NEW.VALUE_TEXT IS NULL AND
+      PX_NEW.VALUE_NUM IS NULL AND
+      PX_NEW.VALUE_DATE IS NOT NULL AND
+      PX_NEW.VALUE_DATE >= PX_NEW.DATE_MIN AND
+      PX_NEW.VALUE_DATE <= PX_NEW.DATE_MAX
+    THEN
+      NULL;
+    ELSIF
+      PX_NEW.DATA_TYPE = 'DATE' AND
+      PX_NEW.NULLABLE = 'N' AND
+      PX_NEW.VALUE_TEXT IS NULL AND
+      PX_NEW.VALUE_NUM IS NULL AND
+      PX_NEW.VALUE_DATE IS NOT NULL AND
+      PX_NEW.VALUE_DATE >= PX_NEW.DATE_MIN AND
+      PX_NEW.VALUE_DATE <= PX_NEW.DATE_MAX
+    THEN
+      NULL;
+    ELSE
+      CASE PX_NEW.DATA_TYPE
+      WHEN 'TEXT' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.VALUE_TEXT='||PX_NEW.VALUE_TEXT);
+      WHEN 'NUMBER' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.VALUE_NUM='||PX_NEW.VALUE_NUM);
+      WHEN 'DATE' THEN
+        ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.VALUE_DATE='||PX_NEW.VALUE_DATE);
+      END CASE;
+    END IF;
+    -- ORDER_NO
+    IF
+      PX_NEW.ORDER_NO IS NOT NULL
+    THEN
+      NULL;
+    ELSE
+      ASSERT(FALSE, C_ACTION, UTL_ERROR.E_INVALID_VALUE, 'PX_NEW.ORDER_NO='||PX_NEW.ORDER_NO);
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_VALIDATE;
+  --------------------------------------------------------------------------------
+  FUNCTION L_HASH(
+      PX_NEW IN T_DICT%ROWTYPE)
+    RETURN VARCHAR2
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_HASH';
+    --
+    V_CONTENT CLOB;
+    V_RESULT  VARCHAR2(32);
+  BEGIN
+    V_CONTENT := PX_NEW.CATEGORY||'#'||
+                 PX_NEW.KEY||'#'||
+                 PX_NEW.DATA_TYPE||'#'||
+                 PX_NEW.NULLABLE||'#'||
+                 PX_NEW.TEXT_ALLOWED||'#'||
+                 PX_NEW.NUM_SCALE||'#'||
+                 PX_NEW.NUM_MIN||'#'||
+                 PX_NEW.NUM_MAX||'#'||
+                 TO_CHAR(PX_NEW.DATE_MIN,'YYYYMMDD')||'#'||
+                 TO_CHAR(PX_NEW.DATE_MAX,'YYYYMMDD')||'#'||
+                 PX_NEW.VALUE_TEXT||'#'||
+                 PX_NEW.VALUE_NUM||'#'||
+                 TO_CHAR(PX_NEW.VALUE_DATE,'YYYYMMDD')||'#'||
+                 PX_NEW.ORDER_NO||'#'||
+                 PX_NEW.DESCRIPTION||'#';
+    --
+    V_RESULT := UTL_COMMON.LX_HASH(V_CONTENT);
+    --
+    RETURN V_RESULT;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_HASH;
+  --------------------------------------------------------------------------------
+  PROCEDURE L_UPDATE(
+      PX_NEW   IN OUT NOCOPY T_DICT%ROWTYPE,
+      P_CSV    IN UTL_CSV.T_CSV,
+      P_REC_NO IN NUMBER)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.L_UPDATE';
+    --
+    VX_NEW T_DICT%ROWTYPE;
+  BEGIN
+    VX_NEW := PX_NEW;
+    --
+    VX_NEW.GUID         := P_CSV(2);
+    VX_NEW.CATEGORY     := P_CSV(3);
+    VX_NEW.KEY          := P_CSV(4);
+    VX_NEW.DATA_TYPE    := P_CSV(5);
+    VX_NEW.NULLABLE     := P_CSV(6);
+    VX_NEW.TEXT_ALLOWED := P_CSV(7);
+    VX_NEW.NUM_SCALE    := P_CSV(8);
+    VX_NEW.NUM_MIN      := P_CSV(9);
+    VX_NEW.NUM_MAX      := P_CSV(10);
+    VX_NEW.DATE_MIN     := TO_CHAR(P_CSV(11), 'YYYY/MM/DD');
+    VX_NEW.DATE_MAX     := TO_CHAR(P_CSV(12), 'YYYY/MM/DD');
+    VX_NEW.VALUE_TEXT   := P_CSV(13);
+    VX_NEW.VALUE_NUM    := P_CSV(14);
+    VX_NEW.VALUE_DATE   := TO_CHAR(P_CSV(15), 'YYYY/MM/DD');
+    VX_NEW.ORDER_NO     := P_CSV(16);
+    VX_NEW.DESCRIPTION  := P_CSV(17);
+    --
+    PX_NEW := VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END L_UPDATE;
+  --------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------
+  FUNCTION TX_CREATE(
+      P_GUID         IN T_DICT.GUID%TYPE,
+      P_CATEGORY     IN T_DICT.CATEGORY%TYPE,
+      P_KEY          IN T_DICT.KEY%TYPE,
+      P_DATA_TYPE    IN T_DICT.DATA_TYPE%TYPE,
+      P_NULLABLE     IN T_DICT.NULLABLE%TYPE,
+      P_TEXT_ALLOWED IN T_DICT.TEXT_ALLOWED%TYPE DEFAULT NULL,
+      P_NUM_SCALE    IN T_DICT.NUM_SCALE%TYPE DEFAULT NULL,
+      P_NUM_MIN      IN T_DICT.NUM_MIN%TYPE DEFAULT NULL,
+      P_NUM_MAX      IN T_DICT.NUM_MAX%TYPE DEFAULT NULL,
+      P_DATE_MIN     IN T_DICT.DATE_MIN%TYPE DEFAULT NULL,
+      P_DATE_MAX     IN T_DICT.DATE_MAX%TYPE DEFAULT NULL,
+      P_VALUE_TEXT   IN T_DICT.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM    IN T_DICT.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE   IN T_DICT.VALUE_DATE%TYPE DEFAULT NULL,
+      P_ORDER_NO     IN T_DICT.ORDER_NO%TYPE DEFAULT NULL,
+      P_DESCRIPTION  IN T_DICT.DESCRIPTION%TYPE DEFAULT NULL,
+      P_TRANS        IN T_DICT.TRANS%TYPE DEFAULT NULL)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.TX_CREATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_DICT%ROWTYPE;
+  BEGIN
+    IF
+      P_TRANS IS NULL
+    THEN
+      VX_TRANS := PKG_TRANS.LX_CREATE_TRANS(C_ACTION);
+      --
+      PKG_TRANS.LX_APPEND_PARAM('P_GUID', P_GUID);
+      PKG_TRANS.LX_APPEND_PARAM('P_CATEGORY', P_CATEGORY);
+      PKG_TRANS.LX_APPEND_PARAM('P_KEY', P_KEY);
+      PKG_TRANS.LX_APPEND_PARAM('P_DATA_TYPE', P_DATA_TYPE);
+      PKG_TRANS.LX_APPEND_PARAM('P_NULLABLE', P_NULLABLE);
+      PKG_TRANS.LX_APPEND_PARAM('P_TEXT_ALLOWED', P_TEXT_ALLOWED);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_SCALE', P_NUM_SCALE);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_MIN', P_NUM_MIN);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_MAX', P_NUM_MAX);
+      PKG_TRANS.LX_APPEND_PARAM('P_DATE_MIN', P_DATE_MIN);
+      PKG_TRANS.LX_APPEND_PARAM('P_DATE_MAX', P_DATE_MAX);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_TEXT', P_VALUE_TEXT);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_NUM', P_VALUE_NUM);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_DATE', P_VALUE_DATE);
+      PKG_TRANS.LX_APPEND_PARAM('P_ORDER_NO', P_ORDER_NO);
+      PKG_TRANS.LX_APPEND_PARAM('P_DESCRIPTION', P_DESCRIPTION);
+      PKG_TRANS.LX_APPEND_PARAM('P_TRANS', P_TRANS);
+    ELSE
+      VX_TRANS := PKG_TRANS.LX_JOIN_TRANS(P_TRANS);
+    END IF;
+    --
+    VX_NEW.GUID         := P_GUID;
+    VX_NEW.CATEGORY     := P_CATEGORY;
+    VX_NEW.KEY          := P_KEY;
+    VX_NEW.DATA_TYPE    := P_DATA_TYPE;
+    VX_NEW.NULLABLE     := P_NULLABLE;
+    VX_NEW.TEXT_ALLOWED := P_TEXT_ALLOWED;
+    VX_NEW.NUM_SCALE    := P_NUM_SCALE;
+    VX_NEW.NUM_MIN      := P_NUM_MIN;
+    VX_NEW.NUM_MAX      := P_NUM_MAX;
+    VX_NEW.DATE_MIN     := P_DATE_MIN;
+    VX_NEW.DATE_MAX     := P_DATE_MAX;
+    VX_NEW.VALUE_TEXT   := P_VALUE_TEXT;
+    VX_NEW.VALUE_NUM    := P_VALUE_NUM;
+    VX_NEW.VALUE_DATE   := P_VALUE_DATE;
+    VX_NEW.ORDER_NO     := P_ORDER_NO;
+    VX_NEW.DESCRIPTION  := P_DESCRIPTION;
+    --
+    VX_NEW := PKG_DICT.LX_CREATE(
+                  PX_NEW => VX_NEW);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_END_TRANS;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_CANCEL_TRANS;
+    ELSE
+      PKG_TRANS.LX_RAISE_FAILED;
+    END IF;
+  END TX_CREATE;
+  --------------------------------------------------------------------------------
+  FUNCTION TX_UPDATE(
+      P_ID           IN T_DICT.ID%TYPE,
+      P_NULLABLE     IN T_DICT.NULLABLE%TYPE,
+      P_TEXT_ALLOWED IN T_DICT.TEXT_ALLOWED%TYPE DEFAULT NULL,
+      P_NUM_SCALE    IN T_DICT.NUM_SCALE%TYPE DEFAULT NULL,
+      P_NUM_MIN      IN T_DICT.NUM_MIN%TYPE DEFAULT NULL,
+      P_NUM_MAX      IN T_DICT.NUM_MAX%TYPE DEFAULT NULL,
+      P_DATE_MIN     IN T_DICT.DATE_MIN%TYPE DEFAULT NULL,
+      P_DATE_MAX     IN T_DICT.DATE_MAX%TYPE DEFAULT NULL,
+      P_VALUE_TEXT   IN T_DICT.VALUE_TEXT%TYPE DEFAULT NULL,
+      P_VALUE_NUM    IN T_DICT.VALUE_NUM%TYPE DEFAULT NULL,
+      P_VALUE_DATE   IN T_DICT.VALUE_DATE%TYPE DEFAULT NULL,
+      P_ORDER_NO     IN T_DICT.ORDER_NO%TYPE DEFAULT NULL,
+      P_DESCRIPTION  IN T_DICT.DESCRIPTION%TYPE DEFAULT NULL,
+      P_TRANS        IN T_DICT.TRANS%TYPE DEFAULT NULL)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.TX_UPDATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_DICT%ROWTYPE;
+  BEGIN
+    IF
+      P_TRANS IS NULL
+    THEN
+      VX_TRANS := PKG_TRANS.LX_CREATE_TRANS(C_ACTION);
+      --
+      PKG_TRANS.LX_APPEND_PARAM('P_ID', P_ID);
+      PKG_TRANS.LX_APPEND_PARAM('P_NULLABLE', P_NULLABLE);
+      PKG_TRANS.LX_APPEND_PARAM('P_TEXT_ALLOWED', P_TEXT_ALLOWED);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_SCALE', P_NUM_SCALE);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_MIN', P_NUM_MIN);
+      PKG_TRANS.LX_APPEND_PARAM('P_NUM_MAX', P_NUM_MAX);
+      PKG_TRANS.LX_APPEND_PARAM('P_DATE_MIN', P_DATE_MIN);
+      PKG_TRANS.LX_APPEND_PARAM('P_DATE_MAX', P_DATE_MAX);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_TEXT', P_VALUE_TEXT);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_NUM', P_VALUE_NUM);
+      PKG_TRANS.LX_APPEND_PARAM('P_VALUE_DATE', P_VALUE_DATE);
+      PKG_TRANS.LX_APPEND_PARAM('P_ORDER_NO', P_ORDER_NO);
+      PKG_TRANS.LX_APPEND_PARAM('P_DESCRIPTION', P_DESCRIPTION);
+      PKG_TRANS.LX_APPEND_PARAM('P_TRANS', P_TRANS);
+    ELSE
+      VX_TRANS := PKG_TRANS.LX_JOIN_TRANS(P_TRANS);
+    END IF;
+    --
+    VX_NEW := PKG_DICT.LX_OBJECT(
+                  P_ID    => P_ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW.NULLABLE     := P_NULLABLE;
+    VX_NEW.TEXT_ALLOWED := P_TEXT_ALLOWED;
+    VX_NEW.NUM_SCALE    := P_NUM_SCALE;
+    VX_NEW.NUM_MIN      := P_NUM_MIN;
+    VX_NEW.NUM_MAX      := P_NUM_MAX;
+    VX_NEW.DATE_MIN     := P_DATE_MIN;
+    VX_NEW.DATE_MAX     := P_DATE_MAX;
+    VX_NEW.VALUE_TEXT   := P_VALUE_TEXT;
+    VX_NEW.VALUE_NUM    := P_VALUE_NUM;
+    VX_NEW.VALUE_DATE   := P_VALUE_DATE;
+    VX_NEW.ORDER_NO     := P_ORDER_NO;
+    VX_NEW.DESCRIPTION  := P_DESCRIPTION;
+    --
+    VX_NEW := PKG_DICT.LX_UPDATE(
+                  PX_NEW => VX_NEW);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_END_TRANS;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_CANCEL_TRANS;
+    ELSE
+      PKG_TRANS.LX_RAISE_FAILED;
+    END IF;
+  END TX_UPDATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE TX_DELETE(
+      P_ID    IN T_DICT.ID%TYPE,
+      P_TRANS IN T_DICT.TRANS%TYPE DEFAULT NULL)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.TX_DELETE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+  BEGIN
+    IF
+      P_TRANS IS NULL
+    THEN
+      VX_TRANS := PKG_TRANS.LX_CREATE_TRANS(C_ACTION);
+      --
+      PKG_TRANS.LX_APPEND_PARAM('P_ID', P_ID);
+      PKG_TRANS.LX_APPEND_PARAM('P_TRANS', P_TRANS);
+    ELSE
+      VX_TRANS := PKG_TRANS.LX_JOIN_TRANS(P_TRANS);
+    END IF;
+    --
+    PKG_DICT.LX_DELETE(
+        P_ID => P_ID);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_END_TRANS;
+    END IF;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    --
+    IF
+      P_TRANS IS NULL
+    THEN
+      PKG_TRANS.LX_CANCEL_TRANS;
+    ELSE
+      PKG_TRANS.LX_RAISE_FAILED;
+    END IF;
+  END TX_DELETE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_CREATE(
+      PX_NEW IN T_DICT%ROWTYPE)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_CREATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_NEW   T_DICT%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_NEW := PX_NEW;
+    --
+    VX_NEW.ID    := NVL(VX_NEW.ID, SEQ_DICT.NEXTVAL);
+    VX_NEW.GUID  := NVL(VX_NEW.GUID, SYS_GUID());
+    VX_NEW.CTIME := SYSTIMESTAMP;
+    VX_NEW.UTIME := VX_NEW.CTIME;
+    VX_NEW.NOTM  := 0;
+    VX_NEW.TRANS := VX_TRANS.ID;
+    --
+    L_VALIDATE(PX_NEW => VX_NEW);
+    --
+    INSERT INTO T_DICT VALUES VX_NEW;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_CREATE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_UPDATE(
+      PX_NEW IN T_DICT%ROWTYPE)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_UPDATE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_OLD   T_DICT%ROWTYPE;
+    VX_NEW   T_DICT%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_OLD := PKG_DICT.LX_OBJECT(
+                  P_ID    => PX_NEW.ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW := PX_NEW;
+    --
+    VX_NEW.UTIME := SYSTIMESTAMP;
+    VX_NEW.NOTM  := VX_NEW.NOTM + 1;
+    VX_NEW.TRANS := VX_TRANS.ID;
+    --
+    L_VALIDATE(PX_NEW => VX_NEW);
+    --
+    INSERT INTO TJ_DICT VALUES VX_OLD;
+    UPDATE T_DICT SET ROW = VX_NEW WHERE ID = VX_NEW.ID;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_UPDATE;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_DELETE(
+      P_ID IN T_DICT.ID%TYPE)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_DELETE';
+    --
+    VX_TRANS T_TRANS%ROWTYPE;
+    VX_OLD   T_DICT%ROWTYPE;
+    VX_NEW   T_DICT%ROWTYPE;
+  BEGIN
+    VX_TRANS := PKG_TRANS.LX_JOIN_TRANS;
+    --
+    VX_OLD := PKG_DICT.LX_OBJECT(
+                  P_ID    => P_ID,
+                  P_LOCK  => 'Y',
+                  P_RAISE => 'Y');
+    --
+    VX_NEW := VX_OLD;
+    --
+    VX_NEW.ID_REF := VX_NEW.ID;
+    VX_NEW.UTIME  := SYSTIMESTAMP;
+    VX_NEW.NOTM   := VX_NEW.NOTM + 1;
+    VX_NEW.TRANS  := VX_TRANS.ID;
+    --
+    INSERT INTO TJ_DICT VALUES VX_OLD;
+    UPDATE T_DICT SET ROW = VX_NEW WHERE ID = VX_NEW.ID;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_DELETE;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_ID    IN T_DICT.ID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_DICT%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND ID = P_ID
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND ID = P_ID;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_GUID  IN T_DICT.GUID%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_DICT%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND GUID = P_GUID
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND GUID = P_GUID;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  FUNCTION LX_OBJECT(
+      P_KEY   IN T_DICT.KEY%TYPE,
+      P_LOCK  IN CHAR,
+      P_RAISE IN CHAR)
+    RETURN T_DICT%ROWTYPE
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_OBJECT';
+    --
+    VX_NEW T_DICT%ROWTYPE;
+  BEGIN
+    IF
+      P_LOCK = 'Y'
+    THEN
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND KEY = P_KEY
+      FOR UPDATE NOWAIT;
+    ELSE
+      SELECT
+        *
+      INTO
+        VX_NEW
+      FROM
+        T_DICT
+      WHERE
+        ID_REF IS NULL
+        AND KEY = P_KEY;
+    END IF;
+    --
+    RETURN VX_NEW;
+  EXCEPTION
+  WHEN OTHERS THEN
+    IF
+      P_RAISE = 'Y'
+    THEN
+      PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+      PKG_TRANS.LX_RAISE_FAILED;
+    ELSE
+      RETURN NULL;
+    END IF;
+  END LX_OBJECT;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_EXPORT(
+      P_DATE_FROM  IN DATE,
+      P_TRANS_FROM IN NUMBER,
+      P_TRANS_TO   IN NUMBER,
+      P_DATA       IN OUT NOCOPY CLOB)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_EXPORT';
+    C_EOL    CONSTANT CHAR(2) := CHR(13)||CHR(10);
+    --
+    V_RECORD    VARCHAR2(32767);
+    V_VALIDATED BOOLEAN := FALSE;
+    V_COUNT1    PLS_INTEGER;
+    V_COUNT2    PLS_INTEGER;
+    V_OPERATION VARCHAR2(15);
+  BEGIN
+    --
+    -- SECTION
+    --
+    V_RECORD := '"DICT"'||C_EOL;
+    --
+    DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    --
+    -- HEADER
+    --
+    V_RECORD := '"OPERATION";"DICT.GUID";"DICT.CATEGORY";"DICT.KEY";"DICT.DATA_TYPE";"DICT.NULLABLE";"DICT.TEXT_ALLOWED";"DICT.NUM_SCALE";"DICT.NUM_MIN";"DICT.NUM_MAX";"DICT.DATE_MIN";"DICT.DATE_MAX";"DICT.VALUE_TEXT";"DICT.VALUE_NUM";"DICT.VALUE_DATE";"DICT.ORDER_NO";"DICT.DESCRIPTION"';
+    --
+    V_COUNT1 := UTL_CSV.LX_TOKEN_COUNT(
+                    P_TEXT        => V_RECORD,
+                    P_DELIMITER   => ';',
+                    P_ENCLOSED_BY => '"');
+    --
+    V_RECORD := V_RECORD||C_EOL;
+    --
+    DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    --
+    -- OBJECTS
+    --
+    FOR X IN (
+      SELECT
+        A.GUID,
+        A.CATEGORY,
+        A.KEY,
+        A.DATA_TYPE,
+        A.NULLABLE,
+        A.TEXT_ALLOWED,
+        A.NUM_SCALE,
+        A.NUM_MIN,
+        A.NUM_MAX,
+        TO_CHAR(A.DATE_MIN, 'YYYY/MM/DD') AS DATE_MIN,
+        TO_CHAR(A.DATE_MAX, 'YYYY/MM/DD') AS DATE_MAX,
+        A.VALUE_TEXT,
+        A.VALUE_NUM,
+        TO_CHAR(A.VALUE_DATE, 'YYYY/MM/DD') AS VALUE_DATE,
+        A.ORDER_NO,
+        A.DESCRIPTION,
+        A.CTIME,
+        A.ID_REF
+      FROM
+        T_DICT A
+      WHERE
+        A.UTIME >= NVL(P_DATE_FROM, A.UTIME)
+        AND A.TRANS >= NVL(P_TRANS_FROM, A.TRANS)
+        AND A.TRANS <= NVL(P_TRANS_TO, A.TRANS)
+      ORDER BY
+        A.ID
+    ) LOOP
+      IF
+        X.CTIME < P_DATE_FROM AND X.ID_REF IS NULL
+      THEN
+        V_OPERATION := 'A';
+      ELSIF
+        X.CTIME < P_DATE_FROM AND X.ID_REF IS NOT NULL
+      THEN
+        V_OPERATION := 'D';
+      ELSIF
+        X.CTIME >= P_DATE_FROM AND X.ID_REF IS NULL
+      THEN
+        V_OPERATION := 'A';
+      ELSE
+        V_OPERATION := 'A/D';
+        --
+        CONTINUE;
+      END IF;
+      --
+      V_RECORD :=
+          '"'||V_OPERATION||'";'||
+          '"'||X.GUID||'";'||
+          '"'||X.CATEGORY||'";'||
+          '"'||X.KEY||'";'||
+          '"'||X.DATA_TYPE||'";'||
+          '"'||X.NULLABLE||'";'||
+          '"'||X.TEXT_ALLOWED||'";'||
+          '"'||X.NUM_SCALE||'";'||
+          '"'||X.NUM_MIN||'";'||
+          '"'||X.NUM_MAX||'";'||
+          '"'||X.DATE_MIN||'";'||
+          '"'||X.DATE_MAX||'";'||
+          '"'||X.VALUE_TEXT||'";'||
+          '"'||X.VALUE_NUM||'";'||
+          '"'||X.VALUE_DATE||'";'||
+          '"'||X.ORDER_NO||'";'||
+          '"'||X.DESCRIPTION||'"';
+      --
+      IF
+        V_VALIDATED = FALSE
+      THEN
+        V_COUNT2 := UTL_CSV.LX_TOKEN_COUNT(
+                        P_TEXT        => V_RECORD,
+                        P_DELIMITER   => ';',
+                        P_ENCLOSED_BY => '"');
+         --
+         ASSERT(V_COUNT1 = V_COUNT2, C_ACTION, UTL_ERROR.E_20876);
+         --
+         V_VALIDATED := TRUE;
+      END IF;
+      --
+      V_RECORD := V_RECORD||C_EOL;
+      --
+      DBMS_LOB.WRITEAPPEND(P_DATA, LENGTH(V_RECORD), V_RECORD);
+    END LOOP X;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(P_ACTION => C_ACTION);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_EXPORT;
+  --------------------------------------------------------------------------------
+  PROCEDURE LX_IMPORT(
+      P_REC_NO IN NUMBER,
+      P_RECORD IN VARCHAR2)
+  AS
+    C_ACTION CONSTANT T_TRANS.ACTION%TYPE := $$PLSQL_UNIT||'.LX_IMPORT';
+    --
+    VX_OLD T_DICT%ROWTYPE;
+    VX_NEW T_DICT%ROWTYPE;
+    --
+    V_CSV UTL_CSV.T_CSV;
+  BEGIN
+    V_CSV := UTL_CSV.LX_TOKENIZER(
+                 P_TEXT        => P_RECORD,
+                 P_DELIMITER   => ';',
+                 P_ENCLOSED_BY => '"',
+                 P_TRIM        => 'Y');
+    --
+    ASSERT(V_CSV.COUNT = 17, C_ACTION, UTL_ERROR.E_20832, P_REC_NO);
+    --
+    IF
+      V_CSV(1) IS NULL
+    THEN
+      RETURN;
+    END IF;
+    --
+    ASSERT(V_CSV(1) IN ('A', 'D'), C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'OPERATION', V_CSV(1));
+    --
+    VX_OLD := PKG_DICT.LX_OBJECT(
+                  P_GUID  => V_CSV(2),
+                  P_LOCK  => 'N',
+                  P_RAISE => 'N');
+    --
+    VX_NEW := VX_OLD;
+    --
+    CASE V_CSV(1)
+    WHEN 'A' THEN
+      L_UPDATE(
+          PX_NEW   => VX_NEW,
+          P_CSV    => V_CSV,
+          P_REC_NO => P_REC_NO);
+      --
+      IF
+        VX_NEW.ID IS NULL
+      THEN
+        VX_NEW := PKG_DICT.LX_CREATE(PX_NEW => VX_NEW);
+      ELSE
+        IF
+          L_HASH(VX_OLD) != L_HASH(VX_NEW)
+        THEN
+          VX_NEW := PKG_DICT.LX_UPDATE(PX_NEW => VX_NEW);
+        END IF;
+      END IF;
+    WHEN 'D' THEN
+      ASSERT(VX_NEW.ID IS NOT NULL, C_ACTION, UTL_ERROR.E_20833, P_REC_NO, 'DICT.GUID', V_CSV(2));
+      --
+      PKG_DICT.TX_DELETE(P_ID => VX_NEW.ID);
+    END CASE;
+  EXCEPTION
+  WHEN OTHERS THEN
+    PKG_TRANS.LX_LOG_ERROR(
+        P_ACTION => C_ACTION,
+        P_P1     => 'P_REC_NO='||P_REC_NO||',P_RECORD='||P_RECORD);
+    PKG_TRANS.LX_RAISE_FAILED;
+  END LX_IMPORT;
+  --------------------------------------------------------------------------------
+END PKG_DICT;
+/
